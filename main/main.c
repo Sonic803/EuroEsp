@@ -147,7 +147,7 @@ void app_main(void)
     ESP_ERROR_CHECK(adc_continuous_new_handle(&adc_config, &adc2cont_handle));
 
     adc_continuous_config_t dig_cfg = {
-        .sample_freq_hz = 20 * 1000,
+        .sample_freq_hz = 60 * 1000,
         .conv_mode = EXAMPLE_ADC_CONV_MODE,
         .format = ADC_DIGI_OUTPUT_FORMAT_TYPE1,
     };
