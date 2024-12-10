@@ -29,6 +29,7 @@ void example_dac_continuous_by_dma(void);
 void example_dac_continuous_by_timer(void);
 void configDac(void);
 void configAdc(void);
+void configPwm(void);
 
 /**
  * @brief Print the example log information

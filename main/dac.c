@@ -5,9 +5,10 @@
 #include "driver/gptimer.h"
 #include "driver/dac_oneshot.h"
 #include "main.h"
+#include "esp_log.h"
 
-#define EXAMPLE_TIMER_RESOLUTION 2000000 // 1MHz, 1 tick = 1us
-#define EXAMPLE_TIMER_ALARM_COUNT 60     // The count value that trigger the timer alarm callback
+#define EXAMPLE_TIMER_RESOLUTION 1000000 // 1MHz, 1 tick = 1us
+#define EXAMPLE_TIMER_ALARM_COUNT 50     // The count value that trigger the timer alarm callback
 
 static dac_oneshot_handle_t chan0_handle;
 static dac_oneshot_handle_t chan1_handle;
@@ -19,21 +20,29 @@ extern uint8_t squ_wav[EXAMPLE_ARRAY_LEN]; // Used to store square wave values
 
 extern float f;
 
+static const char *TAG = "dac";
+
+extern int vcoVal;
+extern int lfoVal;
+
 /* Timer interrupt service routine */
 static bool IRAM_ATTR on_timer_alarm_cb(gptimer_handle_t timer, const gptimer_alarm_event_data_t *edata, void *user_data)
 {
-    static float phase = 0;
-    static float freq = 20;
-    // freq*=1.00001;
-    if (freq > 10000)
-    {
-        freq = 1;
-    }
-    int point = tri_wav[(int)phase];
-    phase += (f / 20) / 10;
-    phase = fmod(phase, EXAMPLE_ARRAY_LEN);
-    ESP_ERROR_CHECK(dac_oneshot_output_voltage(chan0_handle, point));
-    ESP_ERROR_CHECK(dac_oneshot_output_voltage(chan1_handle, 255 - point));
+    // static float phase = 0;
+    // static float freq = 20;
+    // // freq*=1.00001;
+    // if (freq > 10000)
+    // {
+    //     freq = 1;
+    // }
+    // int point = sin_wav[(int)phase];
+    // phase += 0.3;
+    // phase = fmod(phase, EXAMPLE_ARRAY_LEN);
+    ESP_ERROR_CHECK(dac_oneshot_output_voltage(chan0_handle, vcoVal));
+    ESP_ERROR_CHECK(dac_oneshot_output_voltage(chan1_handle, lfoVal));
+    // printf("hello");
+    // ESP_DRAM_LOGI(TAG, "point: %d", point);
+
     return false;
 }
 
@@ -67,4 +76,5 @@ void configDac(void)
     ESP_ERROR_CHECK(gptimer_set_alarm_action(gptimer, &alarm_config));
     ESP_ERROR_CHECK(gptimer_enable(gptimer));
     ESP_ERROR_CHECK(gptimer_start(gptimer));
+    ESP_LOGI(TAG, "finished configDac");
 }
