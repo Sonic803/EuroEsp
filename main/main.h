@@ -30,6 +30,8 @@ void example_dac_continuous_by_timer(void);
 void configDac(void);
 void configAdc(void);
 void configPwm(void);
+void configUpdate(void);
+void configDisplay(void);
 
 /**
  * @brief Print the example log information

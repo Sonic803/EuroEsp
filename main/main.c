@@ -20,6 +20,14 @@
 #include "esp_adc/adc_filter.h"
 #include "main.h"
 
+#include <assert.h>
+#include "driver/gpio.h"
+#include "esp_adc/adc_oneshot.h"
+#include "esp_adc/adc_continuous.h"
+#include "esp_adc/adc_filter.h"
+
+#include "driver/gpio.h"
+
 // #define EXAMPLE_DAC_CHAN0_ADC_CHAN          ADC_CHANNEL_6   // GPIO17, same as DAC channel 0
 // #define EXAMPLE_DAC_CHAN1_ADC_CHAN          ADC_CHANNEL_7
 
@@ -64,17 +72,102 @@ static void example_generate_wave(void)
     }
 }
 
+int vcoVal;
+int lfoVal;
+int pwm1Val;
+int pwm2Val;
+bool updated = false;
+int adc1_raw = 0;
+int adc2_raw = 0;
+
+extern adc_oneshot_unit_handle_t adc_handle;
+int adc1_raw, adc2_raw, adc3_raw, adc4_raw, adc5_raw;
+extern adc_channel_t pwm1_chan, pwm2_chan, pwm3_chan, pwm4_chan, pwm5_chan;
+
+void configure_gpio_input(int gpio_num)
+{
+    // Create a GPIO configuration structure
+    gpio_config_t io_conf = {
+        .pin_bit_mask = (1ULL << gpio_num),    // Select the GPIO pin(s) to configure
+        .mode = GPIO_MODE_INPUT,             // Set the pin as input
+        .pull_up_en = GPIO_PULLUP_DISABLE,     // Disable pull-up resistor
+        .pull_down_en = GPIO_PULLDOWN_DISABLE, // Disable pull-down resistor
+        .intr_type = GPIO_INTR_DISABLE         // Disable interrupts
+    };
+
+    // Apply the configuration
+    gpio_config(&io_conf);
+}
+// void configure_gpio_input(int gpio_num)
+// {
+//     // Create a GPIO configuration structure
+//     gpio_config_t io_conf = {
+//         .pin_bit_mask = (1ULL << gpio_num),    // Select the GPIO pin(s) to configure
+//         .mode = GPIO_MODE_DISABLE,             // Set the pin as input
+//         .pull_up_en = GPIO_PULLUP_DISABLE,     // Disable pull-up resistor
+//         .pull_down_en = GPIO_PULLDOWN_ENABLE, // Disable pull-down resistor
+//         .intr_type = GPIO_INTR_DISABLE         // Disable interrupts
+//     };
+
+//     // Apply the configuration
+//     gpio_config(&io_conf);
+// }
+
 void app_main(void)
 {
+    vTaskDelay(pdMS_TO_TICKS(100));
 
+    gpio_reset_pin(9);
+    gpio_reset_pin(10);
+    // configure_gpio_input(9);
+    // configure_gpio_input(10);
     example_generate_wave();
-    //configDac();
+
+    vcoVal = 0;
+    lfoVal = 100;
+    pwm1Val = 0;
+    pwm2Val = 0;
+
+    configDac();
+    configAdc();
+    configPwm();
+    configUpdate();
+
+    //dump lfo configuriation TODO
+    gpio_dump_io_configuration(stdout, (1ULL << 1) | (1ULL << 2) | (1ULL << 7) | (1ULL << 8)| (1ULL << 9)| (1ULL << 10));
+
+    int count = 0;
+    while (1)
+    {
+        if (updated)
+        {
+            count = 0;
+            updated = false;
+            if (count == 0)
+            {
+                vcoVal = 255-vcoVal;
+                // vcoVal = (adc3_raw*255)/8000;
+                lfoVal = (lfoVal + 10) % 255;
+                pwm1Val = (pwm1Val + adc2_raw / 30) % 255;
+                pwm2Val = 255-pwm2Val;
+                // pwm2Val = (pwm2Val + 1) % 255;
+                // pwm2Val=(pwm2Val+1)%255;
+                //Really slow
+                // adc_oneshot_read(adc_handle, pwm1_chan, &adc1_raw);
+                // adc_oneshot_read(adc_handle, pwm2_chan, &adc2_raw);
+                // adc_oneshot_read(adc_handle, pwm3_chan, &adc3_raw);
+                // adc_oneshot_read(adc_handle, pwm4_chan, &adc4_raw);
+                // adc_oneshot_read(adc_handle, pwm5_chan, &adc5_raw);
+                // ESP_LOGI(TAG, "%d\t%d\t%d\t%d\t%d", adc1_raw, adc2_raw, adc3_raw, adc4_raw, adc5_raw);
+                // vTaskDelay(pdMS_TO_TICKS(10));
+            }
+        }
+    }
 
     // while (1)
     // {
     //     vTaskDelay(pdMS_TO_TICKS(1000));
     // }
 
-    //configPwm();
-    configAdc();
+    // configDisplay();
 }
