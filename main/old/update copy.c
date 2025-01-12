@@ -22,9 +22,9 @@
 
 #include "defines.h"
 
-#define EXAMPLE_TIMER_RESOLUTION 5000000 // 5MHz, 1 tick = 0.2us
-#define EXAMPLE_TIMER_ALARM_COUNT 400     // The count value that trigger the timer alarm callback
-#define EXAMPLE_TIMER_ALARM_COUNT2 400    // The count value that trigger the timer alarm callback
+#define EXAMPLE_TIMER_RESOLUTION 1000000 // 1MHz, 1 tick = 1us
+#define EXAMPLE_TIMER_ALARM_COUNT 50     // The count value that trigger the timer alarm callback
+#define EXAMPLE_TIMER_ALARM_COUNT2 50    // The count value that trigger the timer alarm callback
 
 extern dac_oneshot_handle_t chan0_handle;
 extern dac_oneshot_handle_t chan1_handle;
@@ -35,8 +35,8 @@ extern int pwm1Val;
 extern int pwm2Val;
 extern bool updated;
 extern adc_oneshot_unit_handle_t adc_handle;
-extern int pots_val[2];
-extern int jack_val[3];
+extern int adc1_raw;
+extern int adc2_raw;
 extern adc_channel_t pwm1_chan, pwm2_chan;
 
 extern bool digi1, digi2;
@@ -46,6 +46,7 @@ static const char *TAG = "update";
 static bool IRAM_ATTR on_timer_alarm_cb(gptimer_handle_t timer, const gptimer_alarm_event_data_t *edata, void *user_data)
 {
     // ESP_DRAM_LOGI(TAG, "Timer1 callback triggered");
+    vcoVal = (vcoVal + 1) % 255;
     ESP_ERROR_CHECK(dac_oneshot_output_voltage(chan0_handle, vcoVal));
     ESP_ERROR_CHECK(dac_oneshot_output_voltage(chan1_handle, -lfoVal));
 
@@ -66,10 +67,26 @@ static bool IRAM_ATTR on_timer_alarm_cb(gptimer_handle_t timer, const gptimer_al
 
 static bool IRAM_ATTR on_timer_alarm_cb2(gptimer_handle_t timer, const gptimer_alarm_event_data_t *edata, void *user_data)
 {
+    // ESP_DRAM_LOGI(TAG, "Timer2 callback triggered");
 
     read_adc();
-    calc();
-    // ESP_DRAM_LOGI(TAG, "%d",pots_val[0]);
+    pwm1Val = (pwm1Val + 1) % 255;
+    int i = 0;
+    while (i < 1000)
+    {
+        i++;
+    }
+    // while(1){
+
+    // }
+
+    uint64_t current_time = 0;
+    gptimer_get_raw_count(timer, &current_time);
+
+    gptimer_alarm_config_t alarm_config = {
+        .alarm_count = current_time + 500,
+    };
+    gptimer_set_alarm_action(timer, &alarm_config);
 
     return false;
 }
@@ -112,7 +129,7 @@ void configUpdate(void)
     gptimer_alarm_config_t alarm_config2 = {
         .reload_count = 0,
         .alarm_count = EXAMPLE_TIMER_ALARM_COUNT2,
-        .flags.auto_reload_on_alarm = true,
+        .flags.auto_reload_on_alarm = false,
     };
     gptimer_event_callbacks_t cbs2 = {
         .on_alarm = on_timer_alarm_cb2,

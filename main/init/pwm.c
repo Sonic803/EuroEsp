@@ -21,6 +21,7 @@ static const char *TAG = "pwm";
 
 void configPwm(void)
 {
+    ESP_LOGI(TAG, "started configPwm");
     ledc_timer_config_t ledc_timer = {
         .duty_resolution = LEDC_TIMER_8_BIT, // resolution of PWM duty
         .freq_hz = 100000,                   // frequency of PWM signal
@@ -31,9 +32,9 @@ void configPwm(void)
     ledc_timer_config(&ledc_timer);
 
     ledc_channel_config_t ledc_channel0 = {
-        .channel = LEDC_LS_CH0_CHANNEL,
+        .channel = PWM0_CHANNEL,
         .duty = 0,
-        .gpio_num = LEDC_LS_CH0_GPIO,
+        .gpio_num = PWM0_GPIO,
         .speed_mode = LEDC_LS_MODE,
         .hpoint = 0,
         .timer_sel = LEDC_LS_TIMER,
@@ -42,9 +43,9 @@ void configPwm(void)
     ledc_channel_config(&ledc_channel0);
 
     ledc_channel_config_t ledc_channel1 = {
-        .channel = LEDC_LS_CH1_CHANNEL,
+        .channel = PWM1_CHANNEL,
         .duty = 0,
-        .gpio_num = LEDC_LS_CH1_GPIO,
+        .gpio_num = PWM1_GPIO,
         .speed_mode = LEDC_LS_MODE,
         .hpoint = 0,
         .timer_sel = LEDC_LS_TIMER,
@@ -55,11 +56,11 @@ void configPwm(void)
     ESP_LOGI(TAG, "finished configPwm");
 
     // ledc_fade_func_install(0);
-    // ledc_set_duty(LEDC_LS_MODE, LEDC_LS_CH0_CHANNEL, 50);
+    // ledc_set_duty(LEDC_LS_MODE, PWM0_CHANNEL, 50);
     // int i=0;
     // while(1){
-    //     ledc_set_duty(LEDC_LS_MODE, LEDC_LS_CH0_CHANNEL, i);
-    //     ledc_update_duty(LEDC_LS_MODE, LEDC_LS_CH0_CHANNEL);
+    //     ledc_set_duty(LEDC_LS_MODE, PWM0_CHANNEL, i);
+    //     ledc_update_duty(LEDC_LS_MODE, PWM0_CHANNEL);
     //     i=(i+10)%200;
     //     ESP_LOGI(TAG, "i: %d", i);
 

@@ -29,10 +29,23 @@ void example_dac_continuous_by_dma(void);
 void example_dac_continuous_by_timer(void);
 void configDac(void);
 void configAdc(void);
+void configAdcContinous(void);
 void configPwm(void);
 void configUpdate(void);
 void configDisplay(void);
+void configEncoder(void);
+void configDigital(void);
 
+
+void IRAM_ATTR read_adc(void);
+void print_string(const char *str);
+void getEncoderValue(int *ret_val, bool* pressed);
+
+void startGraphic();
+void runGraphic();
+
+
+void IRAM_ATTR calc(void);
 /**
  * @brief Print the example log information
  *
