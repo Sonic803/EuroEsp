@@ -45,27 +45,6 @@ static const char *TAG = "espvco display";
 
 lv_disp_t *disp;
 
-void lvgl_task(void *pvParameter)
-{
-    while (1)
-    {
-        lv_task_handler();             // Call LVGL's task handler to update the display
-        vTaskDelay(pdMS_TO_TICKS(500)); // Delay to prevent overloading the system
-    }
-}
-
-void example_lvgl_demo_ui(lv_disp_t *disp)
-{
-    lv_obj_t *scr = lv_disp_get_scr_act(disp);
-    lv_obj_t *label = lv_label_create(scr);
-    lv_label_set_long_mode(label, LV_LABEL_LONG_SCROLL_CIRCULAR); /* Circular scroll */
-    lv_label_set_text(label, "Hello Espressif, Hello LVGL.");
-    /* Size of the screen (if you use rotation 90 or 270, please set disp->driver->ver_res) */
-    // lv_obj_set_width(label, lv_display_get_physical_horizontal_resolution(disp));
-        lv_obj_set_width(label, disp->driver->hor_res);
-    lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 0);
-}
-
 void configDisplay(void)
 {
     ESP_LOGI(TAG, "Initialize I2C bus");
@@ -112,6 +91,7 @@ void configDisplay(void)
     ESP_LOGI(TAG, "Initialize LVGL");
     const lvgl_port_cfg_t lvgl_cfg = ESP_LVGL_PORT_INIT_CONFIG();
     lvgl_port_init(&lvgl_cfg);
+    // lv_init();
 
     const lvgl_port_display_cfg_t disp_cfg = {
         .io_handle = io_handle,
@@ -121,18 +101,20 @@ void configDisplay(void)
         .hres = LCD_H_RES,
         .vres = LCD_V_RES,
         .monochrome = true,
+        .color_format = LV_COLOR_FORMAT_RGB565,
         .rotation = {
             .swap_xy = false,
             .mirror_x = true,
             .mirror_y = true,
         },
         .flags = {
-            // .swap_bytes = false,
-            .sw_rotate = true, // true: software; false: hardware
-        }
-        };
+            .swap_bytes = false,
+            .sw_rotate = false, // true: software; false: hardware
+        }};
 
     disp = lvgl_port_add_disp(&disp_cfg);
+
+    lvgl_port_lock(0);
 
     /* Rotation of the screen */
     lv_disp_set_rotation(disp, LV_DISPLAY_ROTATION_0);
@@ -150,9 +132,7 @@ void configDisplay(void)
     }
 
     // Set the theme for the display
-    lv_disp_set_theme(disp, th);
+    lv_display_set_theme(disp, th);
 
-    xTaskCreate(lvgl_task, "lvgl_task", 4096, NULL, 5, NULL);
-
-    // example_lvgl_demo_ui(disp);
+    lvgl_port_unlock();
 }

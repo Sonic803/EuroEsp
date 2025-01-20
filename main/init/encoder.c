@@ -75,7 +75,7 @@ void configEncoder(void)
     //         break;
     //     }
     // }
-    rotary_encoder_enable_acceleration(&re, 20);
+    rotary_encoder_enable_acceleration(&re, 40);
     // rotary_encoder_disable_acceleration(&re);
     ESP_LOGI(TAG, "finished encoder");
 }

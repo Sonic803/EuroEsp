@@ -6,8 +6,8 @@
 #include "esp_err.h"
 #include "esp_log.h"
 #include "driver/i2c_master.h"
-#include "esp_lvgl_port.h"
 #include "lvgl.h"
+#include "esp_lvgl_port.h"
 
 #include "esp_adc/adc_oneshot.h"
 #include "esp_adc/adc_continuous.h"
@@ -54,7 +54,7 @@ struct position
 
 static void value_changed_event_cb(lv_event_t *e)
 {
-    lv_obj_t *arc = lv_event_get_target(e);
+    lv_obj_t *arc = (lv_obj_t *)lv_event_get_target(e);
     int *value = static_cast<int *>(lv_event_get_user_data(e));
     *value = lv_arc_get_value(arc);
     ESP_LOGI(TAG, "Value changed to %d", *value);
@@ -77,6 +77,8 @@ public:
         this->step = step;
         this->pos = pos;
 
+        lvgl_port_lock(0);
+
         lv_obj_t *arc = lv_arc_create(lv_scr_act());
         lv_obj_set_size(arc, 20, 20);
         lv_arc_set_rotation(arc, 135);
@@ -91,6 +93,8 @@ public:
         lv_obj_add_flag(arc, LV_OBJ_FLAG_SCROLL_ON_FOCUS);
 
         lv_obj_add_event_cb(arc, value_changed_event_cb, LV_EVENT_VALUE_CHANGED, &current);
+
+        lvgl_port_unlock();
 
         ESP_LOGI(TAG, "Finished creating arc");
     }
@@ -136,12 +140,13 @@ public:
             arc("S", {80, 10}, voltages[2]),
             arc("A", {20, 30}, times[0], 1),
             arc("D", {50, 30}, times[1], 1),
-            arc("S", {80, 30}, times[2], 1)};
+            arc("S", {80, 30}, times[2], 1)
+            };
 
-        for (int i = 0; i < 4; i++)
-        {
-            addArc(t_arcs[i]);
-        }
+        // for (int i = 0; i < 4; i++)
+        // {
+        //     addArc(t_arcs[i]);
+        // }
     }
     void IRAM_ATTR update()
     {
@@ -191,7 +196,7 @@ public:
 
             if (current < voltages[2])
             {
-            current = voltages[2];
+                current = voltages[2];
             }
             break;
         default:
@@ -225,7 +230,7 @@ static int32_t encoder_diff = 0;     // Tracks encoder rotation steps
 static bool encoder_pressed = false; // Tracks button press state
 
 // Callback function for the encoder input device
-static void encoder_read_cb(lv_indev_drv_t *drv, lv_indev_data_t *data)
+static void encoder_read_cb(lv_indev_t * indev, lv_indev_data_t * data)
 {
     // Report rotation (diff) to LVGL
     data->enc_diff = encoder_diff;
@@ -239,14 +244,10 @@ static void encoder_read_cb(lv_indev_drv_t *drv, lv_indev_data_t *data)
 void encoder_init(void)
 {
     // Initialize the LVGL input device driver
-    static lv_indev_drv_t indev_drv;
-    lv_indev_drv_init(&indev_drv);
 
-    indev_drv.type = LV_INDEV_TYPE_ENCODER; // Specify the type as encoder
-    indev_drv.read_cb = encoder_read_cb;    // Set the callback function
-
-    // Register the input device with LVGL
-    lv_indev_t *indev = lv_indev_drv_register(&indev_drv);
+    lv_indev_t *indev = lv_indev_create();
+    lv_indev_set_type(indev, LV_INDEV_TYPE_ENCODER);
+    lv_indev_set_read_cb(indev, encoder_read_cb);
 
     // (Optional) Assign a group to the input device for focus management
     group = lv_group_create();
@@ -271,10 +272,7 @@ extern "C" void IRAM_ATTR slow_lfo()
 
 extern "C" void IRAM_ATTR update()
 {
-    // print time
-    // ESP_LOGI(TAG, "Helo");
     a->update();
-    // ESP_EARLY_LOGI(TAG, "Hello");
     // slow_lfo();
 }
 
@@ -295,16 +293,4 @@ extern "C" void runGraphic()
     encoder_diff += rotation;
     encoder_pressed = pressed;
 
-    // lvgl_port_lock(0);
-    // if (pressed)
-    // {
-    //     ESP_LOGI(TAG, "Pressing");
-    //     a->push();
-    // }
-    // else if (rotation != 0)
-    // {
-    //     ESP_LOGI(TAG, "Rotating");
-    //     a->rotate(rotation);
-    // }
-    // lvgl_port_unlock();
 }
