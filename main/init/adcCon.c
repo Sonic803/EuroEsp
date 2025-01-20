@@ -126,6 +126,9 @@ void configAdcContinous(void)
     memcpy(all_chan, pots_chan, sizeof(pots_chan));
     memcpy(all_chan + 2, jack_chan, sizeof(jack_chan));
 
+    // print EXAMPLE_ADC_BIT_WIDTH
+    ESP_LOGI(TAG, "EXAMPLE_ADC_BIT_WIDTH is :%" PRIu8, EXAMPLE_ADC_BIT_WIDTH);
+
     adc_digi_pattern_config_t adc_pattern[SOC_ADC_PATT_LEN_MAX] = {0};
     dig_cfg.pattern_num = num_ch;
     for (int i = 0; i < num_ch; i++)

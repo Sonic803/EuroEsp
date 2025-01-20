@@ -8,7 +8,7 @@ set(srcs
        "init/encoder.c"
        "update.c"
        "program.c"
-       "graphic.cpp"
+       "graphic.cpp" 
 
        )
 
@@ -16,3 +16,8 @@ idf_component_register(SRCS "${srcs}"
                        INCLUDE_DIRS "."
                        PRIV_REQUIRES esp_driver_dac esp_driver_gpio esp_driver_gptimer  esp_adc esp_phy esp_driver_ledc  esp_lcd encoder esp_idf_lib_helpers
                        )
+
+# Add custom compile options
+target_compile_options(${COMPONENT_LIB} PRIVATE
+-mtext-section-literals
+)

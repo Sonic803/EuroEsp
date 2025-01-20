@@ -21,6 +21,7 @@
 #include "esp_adc/adc_filter.h"
 
 #include "defines.h"
+#include "esp_timer.h"
 
 extern dac_oneshot_handle_t chan0_handle;
 extern dac_oneshot_handle_t chan1_handle;
@@ -43,7 +44,7 @@ static bool IRAM_ATTR on_timer_alarm_cb(gptimer_handle_t timer, const gptimer_al
 {
     // ESP_DRAM_LOGI(TAG, "Timer1 callback triggered");
     ESP_ERROR_CHECK(dac_oneshot_output_voltage(chan0_handle, vcoVal));
-    ESP_ERROR_CHECK(dac_oneshot_output_voltage(chan1_handle, 255-lfoVal));
+    ESP_ERROR_CHECK(dac_oneshot_output_voltage(chan1_handle, 255 - lfoVal));
 
     ledc_set_duty(LEDC_LOW_SPEED_MODE, PWM0_CHANNEL, pwm1Val);
     ledc_update_duty(LEDC_LOW_SPEED_MODE, PWM0_CHANNEL);
@@ -74,11 +75,41 @@ extern FunctionPointer updateFunction;
 static bool IRAM_ATTR on_timer_alarm_cb2(gptimer_handle_t timer, const gptimer_alarm_event_data_t *edata, void *user_data)
 {
     static int count = 0;
-    read_adc();
-    if (updateFunction != NULL)
+    if (count == 0)
     {
-        updateFunction();
+        int64_t start_time = esp_timer_get_time();
+        read_adc();
+        int64_t end_time = esp_timer_get_time();
+        ESP_EARLY_LOGI(TAG, "Time to read ADC: %lld", end_time - start_time);
+
+        start_time = esp_timer_get_time();
+        if (updateFunction != NULL)
+        {
+            updateFunction();
+        }
+        end_time = esp_timer_get_time();
+        ESP_EARLY_LOGI(TAG, "Time to update: %lld", end_time - start_time);
     }
+    else
+    {
+        read_adc();
+        if (updateFunction != NULL)
+        {
+            updateFunction();
+        }
+    }
+
+    ESP_ERROR_CHECK(dac_oneshot_output_voltage(chan0_handle, vcoVal));
+    ESP_ERROR_CHECK(dac_oneshot_output_voltage(chan1_handle, 255 - lfoVal));
+
+    ledc_set_duty(LEDC_LOW_SPEED_MODE, PWM0_CHANNEL, pwm1Val);
+    ledc_update_duty(LEDC_LOW_SPEED_MODE, PWM0_CHANNEL);
+
+    ledc_set_duty(LEDC_LOW_SPEED_MODE, PWM1_CHANNEL, pwm2Val);
+    ledc_update_duty(LEDC_LOW_SPEED_MODE, PWM1_CHANNEL);
+
+    gpio_set_level(DIGI1_GPIO, digi1);
+    gpio_set_level(DIGI2_GPIO, digi2);
 
     count = (count + 1) % 3000;
     // updateFunction();
@@ -92,35 +123,35 @@ void configUpdate(void)
 
     // updateFunction = update;
 
-    gptimer_handle_t gptimer = NULL;
-    gptimer_config_t timer_config = {
-        .clk_src = GPTIMER_CLK_SRC_DEFAULT,
-        .direction = GPTIMER_COUNT_UP,
-        .resolution_hz = TIMER_RESOLUTION, // 1MHz, 1 tick = 1us
-        .intr_priority = 2,
+    // gptimer_handle_t gptimer = NULL;
+    // gptimer_config_t timer_config = {
+    //     .clk_src = GPTIMER_CLK_SRC_DEFAULT,
+    //     .direction = GPTIMER_COUNT_UP,
+    //     .resolution_hz = TIMER_RESOLUTION, // 1MHz, 1 tick = 1us
+    //     .intr_priority = 1,
 
-    };
-    ESP_ERROR_CHECK(gptimer_new_timer(&timer_config, &gptimer));
+    // };
+    // ESP_ERROR_CHECK(gptimer_new_timer(&timer_config, &gptimer));
 
-    gptimer_alarm_config_t alarm_config = {
-        .reload_count = 0,
-        .alarm_count = TIMER_COUNT,
-        .flags.auto_reload_on_alarm = true,
-    };
-    gptimer_event_callbacks_t cbs = {
-        .on_alarm = on_timer_alarm_cb,
-    };
-    ESP_ERROR_CHECK(gptimer_register_event_callbacks(gptimer, &cbs, NULL));
-    ESP_ERROR_CHECK(gptimer_set_alarm_action(gptimer, &alarm_config));
-    ESP_ERROR_CHECK(gptimer_enable(gptimer));
-    ESP_ERROR_CHECK(gptimer_start(gptimer));
+    // gptimer_alarm_config_t alarm_config = {
+    //     .reload_count = 0,
+    //     .alarm_count = TIMER_COUNT,
+    //     .flags.auto_reload_on_alarm = true,
+    // };
+    // gptimer_event_callbacks_t cbs = {
+    //     .on_alarm = on_timer_alarm_cb,
+    // };
+    // ESP_ERROR_CHECK(gptimer_register_event_callbacks(gptimer, &cbs, NULL));
+    // ESP_ERROR_CHECK(gptimer_set_alarm_action(gptimer, &alarm_config));
+    // ESP_ERROR_CHECK(gptimer_enable(gptimer));
+    // ESP_ERROR_CHECK(gptimer_start(gptimer));
 
     gptimer_handle_t gptimer2 = NULL;
     gptimer_config_t timer_config2 = {
         .clk_src = GPTIMER_CLK_SRC_DEFAULT,
         .direction = GPTIMER_COUNT_UP,
         .resolution_hz = TIMER_RESOLUTION, // 1MHz, 1 tick = 1us
-        .intr_priority = 1,
+        .intr_priority = 0,
     };
     ESP_ERROR_CHECK(gptimer_new_timer(&timer_config2, &gptimer2));
 

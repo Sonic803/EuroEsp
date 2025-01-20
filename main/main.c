@@ -120,7 +120,7 @@ void configure_gpio_input(int gpio_num)
 
 void app_main(void)
 {
-    // vTaskDelay(pdMS_TO_TICKS(3000));
+    vTaskDelay(pdMS_TO_TICKS(1000));
 
     // gpio_reset_pin(18);
     // gpio_reset_pin(10);
@@ -128,12 +128,12 @@ void app_main(void)
     // configure_gpio_input(2);
     example_generate_wave();
 
-    gpio_dump_io_configuration(stdout, (1ULL << 17) | (1ULL << 18));
+    // gpio_dump_io_configuration(stdout, (1ULL << 17) | (1ULL << 18));
 
-    vcoVal = 0;
-    lfoVal = 100;
-    pwm1Val = 0;
-    pwm2Val = 0;
+    // vcoVal = 0;
+    // lfoVal = 100;
+    // pwm1Val = 0;
+    // pwm2Val = 0;
 
     configDac();
     // configAdc();
@@ -142,7 +142,6 @@ void app_main(void)
     configPwm();
     configEncoder();
     configDigital();
-    configUpdate();
 
     // dump lfo configuriation TODO
     //  gpio_dump_io_configuration(stdout, (1ULL << 1) | (1ULL << 2) | (1ULL << 7) | (1ULL << 8)| (1ULL << 9)| (1ULL << 10));
@@ -151,6 +150,9 @@ void app_main(void)
     int count = 0;
 
     startGraphic();
+
+    configUpdate();
+
     while (1)
     {
         runGraphic();

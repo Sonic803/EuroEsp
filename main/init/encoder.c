@@ -17,7 +17,7 @@
 #define RE_B_GPIO 5
 #define RE_BTN_GPIO 6
 
-#define EV_QUEUE_LEN 10
+#define EV_QUEUE_LEN 30
 
 static QueueHandle_t event_queue;
 

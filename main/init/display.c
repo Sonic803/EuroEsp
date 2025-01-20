@@ -44,14 +44,13 @@ static const char *TAG = "espvco display";
 #define LCD_PARAM_BITS 8
 
 lv_disp_t *disp;
-lv_obj_t *scr;
 
 void lvgl_task(void *pvParameter)
 {
     while (1)
     {
         lv_task_handler();             // Call LVGL's task handler to update the display
-        vTaskDelay(pdMS_TO_TICKS(50)); // Delay to prevent overloading the system
+        vTaskDelay(pdMS_TO_TICKS(500)); // Delay to prevent overloading the system
     }
 }
 
@@ -118,7 +117,7 @@ void configDisplay(void)
         .io_handle = io_handle,
         .panel_handle = panel_handle,
         .buffer_size = LCD_H_RES * LCD_V_RES,
-        // .double_buffer = true,
+        .double_buffer = true,
         .hres = LCD_H_RES,
         .vres = LCD_V_RES,
         .monochrome = true,
@@ -140,12 +139,18 @@ void configDisplay(void)
 
     ESP_LOGI(TAG, "Display LVGL Scroll Text");
 
-    scr = lv_disp_get_scr_act(disp);
+    // scr = lv_disp_get_scr_act(disp);
 
-    if (scr == NULL)
+    lv_theme_t *th = lv_theme_mono_init(disp, false, LV_FONT_DEFAULT);
+    /* Set the mono system theme */
+    if (th == NULL)
     {
-        ESP_LOGE(TAG, "Failed to get the screen object.");
+        ESP_LOGE(TAG, "Failed to initialize mono theme.");
+        return;
     }
+
+    // Set the theme for the display
+    lv_disp_set_theme(disp, th);
 
     xTaskCreate(lvgl_task, "lvgl_task", 4096, NULL, 5, NULL);
 

@@ -3,6 +3,10 @@
  *
  * SPDX-License-Identifier: CC0-1.0
  */
+#include "esp_adc/adc_oneshot.h"
+#include "esp_adc/adc_continuous.h"
+#include "esp_adc/adc_filter.h"
+
 #define CONST_PERIOD_2_PI           6.2832                  // 2 * PI
 
 #define EXAMPLE_ARRAY_LEN           400                     // Length of wave array
@@ -45,7 +49,7 @@ void startGraphic();
 void runGraphic();
 
 
-void IRAM_ATTR calc(void);
+// void IRAM_ATTR calc(void);
 /**
  * @brief Print the example log information
  *
@@ -53,3 +57,17 @@ void IRAM_ATTR calc(void);
  * @param wave_freq     The frequency of the wave
  */
 void example_log_info(uint32_t conv_freq, uint32_t wave_freq);
+
+
+extern int vcoVal;
+extern int lfoVal;
+extern int pwm1Val;
+extern int pwm2Val;
+extern bool updated;
+extern adc_oneshot_unit_handle_t adc_handle;
+extern int pots_val[2];
+extern int jack_val[3];
+extern adc_channel_t pwm1_chan, pwm2_chan;
+
+
+typedef void (*FunctionPointer)();
