@@ -57,7 +57,6 @@ int vals[20];
 void read_adc()
 {
 
-    // time this function
     uint8_t result[TOTAL_BYTES] = {0};
     uint32_t ret_num = 0;
     esp_err_t ret = adc_continuous_read(handle, result, TOTAL_BYTES, &ret_num, 0);
@@ -81,21 +80,11 @@ void read_adc()
                 // ESP_LOGW(TAG, "Invalid data [%" PRIu32 "_%" PRIx32 "]", chan_num, data);
             }
         }
-        /**
-         * Because printing is slow, so every time you call `ulTaskNotifyTake`, it will immediately return.
-         * To avoid a task watchdog timeout, add a delay here. When you replace the way you process the data,
-         * usually you don't need this delay (as this task will block for a while).
-         */
         pots_val[0] = vals[pots_chan[0] & 0x7];
         pots_val[1] = vals[pots_chan[1] & 0x7];
         jack_val[0] = vals[jack_chan[0] & 0x7];
         jack_val[1] = vals[jack_chan[1] & 0x7];
         jack_val[2] = vals[jack_chan[2] & 0x7];
-        // for (int i = 0; i < num_ch; i++)
-        // {
-        //     int chan_num = all_chan[i] & 0x7;
-        //     // ESP_LOGI(TAG, "Channel: %d, Value: %d", chan_num, vals[chan_num]);
-        // }
     }
 }
 
@@ -160,11 +149,5 @@ void configAdcContinous(void)
     ESP_ERROR_CHECK(adc_continuous_register_event_callbacks(handle, &cbs, NULL));
     ESP_ERROR_CHECK(adc_continuous_start(handle));
 
-    // while(1){
-    //     read_adc();
-    //     vTaskDelay(pdMS_TO_TICKS(50));
-    // }
-
-    // ESP_ERROR_CHECK(adc_continuous_stop(handle));
-    // ESP_ERROR_CHECK(adc_continuous_deinit(handle));
+    ESP_LOGI(TAG, "finished configAdcContinous");
 }

@@ -54,16 +54,4 @@ void configPwm(void)
     ledc_channel_config(&ledc_channel1);
 
     ESP_LOGI(TAG, "finished configPwm");
-
-    // ledc_fade_func_install(0);
-    // ledc_set_duty(LEDC_LS_MODE, PWM0_CHANNEL, 50);
-    // int i=0;
-    // while(1){
-    //     ledc_set_duty(LEDC_LS_MODE, PWM0_CHANNEL, i);
-    //     ledc_update_duty(LEDC_LS_MODE, PWM0_CHANNEL);
-    //     i=(i+10)%200;
-    //     ESP_LOGI(TAG, "i: %d", i);
-
-    //     vTaskDelay(100 / portTICK_PERIOD_MS);
-    // }
 }

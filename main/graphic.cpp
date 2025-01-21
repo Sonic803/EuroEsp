@@ -259,21 +259,9 @@ void encoder_init(void)
     ESP_LOGI(TAG, "Finished encoder group");
 }
 
-extern "C" void IRAM_ATTR slow_lfo()
-{
-    static float i = 0;
-    i += (float)255 * TIMER_PERIOD / 1000000 / 1;
-    if (i > 255)
-    {
-        i = 0;
-    }
-    // lfoVal=int(i);
-}
-
 extern "C" void IRAM_ATTR update()
 {
     a->update();
-    // slow_lfo();
 }
 
 extern "C" void startGraphic()

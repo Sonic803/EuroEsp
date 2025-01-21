@@ -1,9 +1,3 @@
-/*
- * SPDX-FileCopyrightText: 2021-2024 Espressif Systems (Shanghai) CO LTD
- *
- * SPDX-License-Identifier: CC0-1.0
- */
-
 #include <stdio.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -24,10 +18,6 @@
 static const char *TAG = "espvco display";
 
 #define I2C_BUS_PORT 0
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//////////////////// Please update the following configuration according to your LCD spec //////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #define LCD_PIXEL_CLOCK_HZ (400 * 1000)
 #define LCD_SDA 10
 #define LCD_SCL 9
@@ -35,7 +25,6 @@ static const char *TAG = "espvco display";
 #define PIN_NUM_RST -1
 #define I2C_HW_ADDR 0x3C
 
-// The pixel number in horizontal and vertical
 #define LCD_H_RES 128
 #define LCD_V_RES 64
 
@@ -91,7 +80,6 @@ void configDisplay(void)
     ESP_LOGI(TAG, "Initialize LVGL");
     const lvgl_port_cfg_t lvgl_cfg = ESP_LVGL_PORT_INIT_CONFIG();
     lvgl_port_init(&lvgl_cfg);
-    // lv_init();
 
     const lvgl_port_display_cfg_t disp_cfg = {
         .io_handle = io_handle,

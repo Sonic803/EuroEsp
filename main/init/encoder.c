@@ -45,45 +45,16 @@ void configEncoder(void)
     ESP_ERROR_CHECK(rotary_encoder_add(&re));
 
     ESP_LOGI(TAG, "Initial value: %d", val);
-    // while (1)
-    // {
-    //     xQueueReceive(event_queue, &e, portMAX_DELAY);
 
-    //     switch (e.type)
-    //     {
-    //     case RE_ET_BTN_PRESSED:
-    //         ESP_LOGI(TAG, "Button pressed");
-    //         break;
-    //     case RE_ET_BTN_RELEASED:
-    //         ESP_LOGI(TAG, "Button released");
-    //         break;
-    //     case RE_ET_BTN_CLICKED:
-    //         ESP_LOGI(TAG, "Button clicked");
-    //         rotary_encoder_enable_acceleration(&re, 100);
-    //         ESP_LOGI(TAG, "Acceleration enabled");
-    //         break;
-    //     case RE_ET_BTN_LONG_PRESSED:
-    //         ESP_LOGI(TAG, "Looooong pressed button");
-    //         rotary_encoder_disable_acceleration(&re);
-    //         ESP_LOGI(TAG, "Acceleration disabled");
-    //         break;
-    //     case RE_ET_CHANGED:
-    //         val += e.diff;
-    //         ESP_LOGI(TAG, "Value = %" PRIi32, val);
-    //         break;
-    //     default:
-    //         break;
-    //     }
-    // }
     rotary_encoder_enable_acceleration(&re, 40);
     // rotary_encoder_disable_acceleration(&re);
+
     ESP_LOGI(TAG, "finished encoder");
 }
 
 void getEncoderValue(int *ret_val, bool *pressed)
 
 {
-    // *ret_val = 0;
     *pressed = false;
     int start_val = val;
     // TODO

@@ -25,17 +25,16 @@
 extern dac_oneshot_handle_t chan0_handle;
 extern dac_oneshot_handle_t chan1_handle;
 
-extern int vcoVal;
-extern int lfoVal;
-extern int pwm1Val;
-extern int pwm2Val;
-extern bool updated;
+int vcoVal;
+int lfoVal;
+int pwm1Val;
+int pwm2Val;
+bool digi1, digi2;
+bool updated;
 extern adc_oneshot_unit_handle_t adc_handle;
 extern int pots_val[2];
 extern int jack_val[3];
 extern adc_channel_t pwm1_chan, pwm2_chan;
-
-extern bool digi1, digi2;
 
 static const char *TAG = "update";
 
@@ -64,13 +63,6 @@ typedef void (*FunctionPointer)();
 
 extern FunctionPointer updateFunction;
 
-// void update()
-// {
-//     ESP_LOGI(TAG, "Helo");
-//     a->update();
-//     ESP_EARLY_LOGI(TAG, "Hello");
-// }
-
 static bool IRAM_ATTR on_timer_alarm_cb2(gptimer_handle_t timer, const gptimer_alarm_event_data_t *edata, void *user_data)
 {
     static int count = 0;
@@ -81,8 +73,6 @@ static bool IRAM_ATTR on_timer_alarm_cb2(gptimer_handle_t timer, const gptimer_a
     }
 
     count = (count + 1) % 3000;
-    // updateFunction();
-    // calc();
 
     return false;
 }
@@ -90,13 +80,11 @@ static bool IRAM_ATTR on_timer_alarm_cb2(gptimer_handle_t timer, const gptimer_a
 void configUpdate(void)
 {
 
-    // updateFunction = update;
-
     gptimer_handle_t gptimer = NULL;
     gptimer_config_t timer_config = {
         .clk_src = GPTIMER_CLK_SRC_DEFAULT,
         .direction = GPTIMER_COUNT_UP,
-        .resolution_hz = TIMER_RESOLUTION, // 1MHz, 1 tick = 1us
+        .resolution_hz = TIMER_RESOLUTION,
         .intr_priority = 2,
 
     };
@@ -119,7 +107,7 @@ void configUpdate(void)
     gptimer_config_t timer_config2 = {
         .clk_src = GPTIMER_CLK_SRC_DEFAULT,
         .direction = GPTIMER_COUNT_UP,
-        .resolution_hz = TIMER_RESOLUTION, // 1MHz, 1 tick = 1us
+        .resolution_hz = TIMER_RESOLUTION,
         .intr_priority = 1,
     };
     ESP_ERROR_CHECK(gptimer_new_timer(&timer_config2, &gptimer2));
