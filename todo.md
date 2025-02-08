@@ -7,3 +7,4 @@
 - [ ] continous adc
 - [ ] Screen totale
 - [ ] Screen di default, che dopo che lo instanzi gli gli passi i blocchi da costruire e le variabili
+- [ ] flex screen

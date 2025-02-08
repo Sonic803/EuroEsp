@@ -59,9 +59,7 @@ static bool IRAM_ATTR on_timer_alarm_cb(gptimer_handle_t timer, const gptimer_al
     return false;
 }
 
-typedef void (*FunctionPointer)();
-
-extern FunctionPointer updateFunction;
+extern void (*updateFunction)();
 
 static bool IRAM_ATTR on_timer_alarm_cb2(gptimer_handle_t timer, const gptimer_alarm_event_data_t *edata, void *user_data)
 {

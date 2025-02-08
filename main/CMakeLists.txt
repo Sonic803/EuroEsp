@@ -1,3 +1,5 @@
+file(GLOB screens_srcs "screens/*.c" "screens/*.cpp")
+
 set(srcs
        "main.c"
        "init/dac.c"
@@ -6,10 +8,12 @@ set(srcs
        "init/adcCon.c"
        "init/digital.c"
        "init/encoder.c"
+       "init/lvgl.c"
        "update.c"
        "program.c"
-       "graphic.cpp" 
-
+       "graphic.cpp"
+       "screens/adsr.cpp"
+       ${screens_srcs}
        )
 
 idf_component_register(SRCS "${srcs}"

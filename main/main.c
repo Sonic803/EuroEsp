@@ -35,12 +35,15 @@ void app_main(void)
     configPwm();
     configEncoder();
     configDigital();
+    configLvgl();
 
     startGraphic();
+
     configUpdate();
 
     while (1)
     {
+        updateEncoder();
         runGraphic();
         vTaskDelay(pdMS_TO_TICKS(50));
     }

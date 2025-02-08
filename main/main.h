@@ -39,6 +39,10 @@ void configUpdate(void);
 void configDisplay(void);
 void configEncoder(void);
 void configDigital(void);
+void configLvgl(void);
+
+void updateEncoder(void);
+
 
 
 void IRAM_ATTR read_adc(void);

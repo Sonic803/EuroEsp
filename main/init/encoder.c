@@ -24,7 +24,7 @@ static QueueHandle_t event_queue;
 rotary_encoder_event_t e;
 
 static rotary_encoder_t re;
-int val = 0;
+int val = -1;
 
 static const char *TAG = "encoder";
 
@@ -55,27 +55,29 @@ void configEncoder(void)
 void getEncoderValue(int *ret_val, bool *pressed)
 
 {
-    *pressed = false;
     int start_val = val;
+    static bool pressed_last = false;
     // TODO
     while (xQueueReceive(event_queue, &e, 0))
     {
         switch (e.type)
         {
         case RE_ET_BTN_PRESSED:
-            ESP_LOGI(TAG, "Button pressed");
+            pressed_last = true;
+            // ESP_LOGI(TAG, "Button pressed");
             break;
         case RE_ET_BTN_RELEASED:
-            ESP_LOGI(TAG, "Button released");
+            pressed_last = false;
+            // ESP_LOGI(TAG, "Button released");
             break;
         case RE_ET_BTN_CLICKED:
             ESP_LOGI(TAG, "Button clicked");
-            *pressed = true;
+            // *pressed = true;
             // rotary_encoder_enable_acceleration(&re, 100);
             // ESP_LOGI(TAG, "Acceleration enabled");
             break;
         case RE_ET_BTN_LONG_PRESSED:
-            ESP_LOGI(TAG, "Looooong pressed button");
+            // ESP_LOGI(TAG, "Looooong pressed button");
             // rotary_encoder_disable_acceleration(&re);
             // ESP_LOGI(TAG, "Acceleration disabled");
             break;
@@ -87,5 +89,18 @@ void getEncoderValue(int *ret_val, bool *pressed)
             break;
         }
     }
-    *ret_val = -((int)val/2-(int)start_val/2);
+    *ret_val = -((int)val / 2 - (int)start_val / 2);
+    *pressed = pressed_last;
+}
+
+int encoder_diff = 0;
+bool encoder_pressed = false;
+
+void updateEncoder()
+{
+    int rotation;
+    bool pressed;
+    getEncoderValue(&rotation, &pressed);
+    encoder_diff += rotation;
+    encoder_pressed = pressed;
 }

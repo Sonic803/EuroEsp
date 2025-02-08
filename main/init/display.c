@@ -32,8 +32,6 @@ static const char *TAG = "espvco display";
 #define LCD_CMD_BITS 8
 #define LCD_PARAM_BITS 8
 
-lv_disp_t *disp;
-
 void configDisplay(void)
 {
     ESP_LOGI(TAG, "Initialize I2C bus");
@@ -100,7 +98,7 @@ void configDisplay(void)
             .sw_rotate = false, // true: software; false: hardware
         }};
 
-    disp = lvgl_port_add_disp(&disp_cfg);
+    lv_disp_t *disp = lvgl_port_add_disp(&disp_cfg);
 
     lvgl_port_lock(0);
 
@@ -108,8 +106,6 @@ void configDisplay(void)
     lv_disp_set_rotation(disp, LV_DISPLAY_ROTATION_0);
 
     ESP_LOGI(TAG, "Display LVGL Scroll Text");
-
-    // scr = lv_disp_get_scr_act(disp);
 
     lv_theme_t *th = lv_theme_mono_init(disp, false, LV_FONT_DEFAULT);
     /* Set the mono system theme */
