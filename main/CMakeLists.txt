@@ -10,7 +10,6 @@ set(srcs
        "init/encoder.c"
        "init/lvgl.c"
        "update.c"
-       "program.c"
        "graphic.cpp"
        "screens/adsr.cpp"
        ${screens_srcs}

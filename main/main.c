@@ -23,11 +23,13 @@
 #include "driver/gpio.h"
 #include "defines.h"
 
+// #include "esp_system.h"
+
 static const char *TAG = "espvco";
 
 void app_main(void)
 {
-    vTaskDelay(pdMS_TO_TICKS(1000));
+    vTaskDelay(pdMS_TO_TICKS(2000));
 
     configDac();
     configAdcContinous();
@@ -40,6 +42,11 @@ void app_main(void)
     startGraphic();
 
     configUpdate();
+
+    ESP_LOGI("MEM", "Free heap size: %" PRIu32 " KB", esp_get_free_heap_size() / 1024);
+    ESP_LOGI("MEM", "Free DRAM: %zu KB", heap_caps_get_free_size(MALLOC_CAP_8BIT) / 1024);
+    ESP_LOGI("MEM", "Free IRAM: %zu KB", heap_caps_get_free_size(MALLOC_CAP_EXEC) / 1024);
+    ESP_LOGI("MEM", "Free PSRAM: %zu KB", heap_caps_get_free_size(MALLOC_CAP_SPIRAM) / 1024);
 
     while (1)
     {

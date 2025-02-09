@@ -43,8 +43,6 @@ static void value_changed_event_cb(lv_event_t *e)
     // ESP_LOGI(TAG, "Value changed to %d", *value);
 }
 
-
-
 void title_event_cb(lv_event_t *e)
 {
     lv_obj_t *obj = (lv_obj_t *)lv_event_get_current_target(e);
@@ -86,20 +84,17 @@ void title_event_cb(lv_event_t *e)
     }
 }
 
-arc::arc(lv_obj_t *scrn, lv_group_t *group, std::string nome, position pos, int &current, int min, int max, int step) : current(current)
+arc::arc(lv_obj_t *scrn, lv_group_t *group, position pos, int &current, int min, int max, int step) : current(current)
 {
-    this->min = min;
-    this->max = max;
-    this->step = step;
-    this->pos = pos;
-
     lvgl_port_lock(0);
 
     lv_obj_t *arc = lv_arc_create(scrn);
-    lv_obj_set_size(arc, 20, 20);
+    int arc_size = 20; // Size of the arc
+    lv_obj_set_size(arc, arc_size, arc_size);
     lv_arc_set_rotation(arc, 135);
     lv_arc_set_bg_angles(arc, 0, 270);
-    lv_obj_align(arc, LV_ALIGN_TOP_LEFT, pos.x, pos.y);
+    lv_obj_align(arc, LV_ALIGN_TOP_LEFT, pos.x - (arc_size / 2), pos.y - (arc_size / 2));
+
     lv_group_add_obj(group, arc); // Add the arc to the group
 
     lv_arc_set_range(arc, min, max);
@@ -114,10 +109,29 @@ arc::arc(lv_obj_t *scrn, lv_group_t *group, std::string nome, position pos, int 
 
     // ESP_LOGI(TAG, "Finished creating arc");
 }
-arc::~arc()
+
+label::label(lv_obj_t *scrn, lv_group_t *group, position pos, char *name)
 {
+    lvgl_port_lock(0);
+    lv_obj_t *name_label = lv_label_create(scrn);
+    lv_label_set_text(name_label, name);
+    // Set text alignment to center
+    lv_obj_set_style_text_align(name_label, LV_TEXT_ALIGN_CENTER, 0);
+
+    // Refresh the layout to get correct width and height
+    lv_obj_update_layout(name_label);
+
+    // Get label size
+    int label_w = lv_obj_get_width(name_label);
+    int label_h = lv_obj_get_height(name_label);
+
+    // Adjust position so the center of the label is at pos.x, pos.y
+    lv_obj_align(name_label, LV_ALIGN_TOP_LEFT, pos.x - (label_w / 2), pos.y - (label_h / 2));
+
+    lvgl_port_unlock();
 }
-title::title(lv_obj_t *scrn, lv_group_t *group, char* nome, position pos)
+
+title::title(lv_obj_t *scrn, lv_group_t *group, position pos, char *nome)
 {
     lvgl_port_lock(0);
 
@@ -144,6 +158,7 @@ title::title(lv_obj_t *scrn, lv_group_t *group, char* nome, position pos)
     lv_obj_add_style(title_label, &style_title_edited, LV_STATE_EDITED);
 
     lv_obj_add_flag(title_label, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_add_flag(title_label, LV_OBJ_FLAG_SCROLL_ON_FOCUS);
 
     lv_obj_add_event_cb(title_label, title_event_cb, LV_EVENT_ALL, NULL); // Handle rotation
 
@@ -154,9 +169,6 @@ title::title(lv_obj_t *scrn, lv_group_t *group, char* nome, position pos)
     lv_group_set_editing(group, true);
 
     lvgl_port_unlock();
-}
-title::~title()
-{
 }
 
 screen::screen()
@@ -185,7 +197,6 @@ void screen::select()
 
     lvgl_port_unlock();
 }
-
 
 void IRAM_ATTR screen::update()
 {

@@ -22,25 +22,23 @@ struct position
     int y;
 };
 
+class label
+{
+public:
+    label(lv_obj_t *scrn, lv_group_t *group, position pos, char *name);
+};
+
 class arc
 {
 public:
-    int min;
-    int max;
-    int step;
     int &current;
-    position pos;
-    lv_obj_t *nome;
-    lv_obj_t *valore;
-    arc(lv_obj_t *scrn, lv_group_t *group, std::string nome, position pos, int &current, int min = 0, int max = 255, int step = 1);
-    ~arc();
+    arc(lv_obj_t *scrn, lv_group_t *group, position pos, int &current, int min = 0, int max = 255, int step = 1);
 };
 
 class title
 {
 public:
-    title(lv_obj_t *scrn, lv_group_t *group, char* name, position pos);
-    ~title();
+    title(lv_obj_t *scrn, lv_group_t *group, position pos, char *name);
 };
 
 class screen

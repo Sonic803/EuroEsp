@@ -35,9 +35,10 @@ public:
         SUSTAIN,
         RELEASE
     } state;
-    int voltages[3] = {200, 170, 0};
-    int times[3] = {100, 100, 100};
-    float current = 0;
+    int shape = 0;
+    int freq = 0;
+    int todo = 0;
+    long phase = 0;
 
     vcoScreen();
     void IRAM_ATTR update() override;

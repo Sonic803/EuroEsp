@@ -35,17 +35,30 @@ static const char *TAG = "adsr";
 adsrScreen::adsrScreen()
 {
 
-    t = new title(scrn, group, "ADSR", {20, 20});
+    t = new title(scrn, group, {20, 20}, "ADSR");
 
     state = RELEASE;
     // todo can be an issue
     arc t_arcs[] = {
-        arc(scrn, group, "A", {20, 20}, voltages[0]),
-        arc(scrn, group, "D", {50, 20}, voltages[1]),
-        arc(scrn, group, "S", {80, 20}, voltages[2]),
-        arc(scrn, group, "A", {20, 40}, times[0], 1),
-        arc(scrn, group, "D", {50, 40}, times[1], 1),
-        arc(scrn, group, "S", {80, 40}, times[2], 1)};
+        arc(scrn, group, {35, 35}, voltages[0]),
+        arc(scrn, group, {64, 35}, voltages[1]),
+        arc(scrn, group, {93, 35}, voltages[2]),
+        arc(scrn, group, {35, 70}, times[0], 1),
+        arc(scrn, group, {64, 70}, times[1], 1),
+        arc(scrn, group, {93, 70}, times[2], 1)};
+    
+    label labels[]={
+        label(scrn, group, {10, 35}, "LEV"),
+        label(scrn, group, {35, 19}, "ATT"),
+        label(scrn, group, {64, 19}, "SUS"),
+        label(scrn, group, {93, 19}, "REL"),
+        label(scrn, group, {10, 70}, "DUR"),
+        label(scrn, group, {35, 54}, "ATT"),
+        label(scrn, group, {64, 54}, "DEC"),
+        label(scrn, group, {93, 54}, "REL"),
+    };
+
+    
 
     // lv_scr_load(scrn);
 }
@@ -70,8 +83,8 @@ void IRAM_ATTR adsrScreen::update()
     {
     case ATTACK:
         step = (float)3 * times[0] / 255; // Maximum 3 seconds
-        current += (float)255 * TIMER_PERIOD_SEC / step;
-        if (current > voltages[0])
+        cur_val += (float)255 * TIMER_PERIOD_SEC / step;
+        if (cur_val > voltages[0])
         {
             state = DECAY;
         }
@@ -80,28 +93,28 @@ void IRAM_ATTR adsrScreen::update()
     case DECAY:
         step = (float)3 * times[1] / 255; // Maximum 3 seconds
 
-        current -= (float)255 * TIMER_PERIOD_SEC / step;
-        if (current < voltages[1])
+        cur_val -= (float)255 * TIMER_PERIOD_SEC / step;
+        if (cur_val < voltages[1])
         {
             state = SUSTAIN;
         }
         break;
 
     case SUSTAIN:
-        current = voltages[1];
+        cur_val = voltages[1];
         break;
 
     case RELEASE:
         step = (float)3 * times[2] / 255; // Maximum 3 seconds
-        current -= (float)255 * TIMER_PERIOD_SEC / step;
+        cur_val -= (float)255 * TIMER_PERIOD_SEC / step;
 
-        if (current < voltages[2])
+        if (cur_val < voltages[2])
         {
-            current = voltages[2];
+            cur_val = voltages[2];
         }
         break;
     default:
         break;
     }
-    vcoVal = (int)current;
+    vcoVal = (int)cur_val;
 }

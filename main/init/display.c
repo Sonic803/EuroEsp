@@ -94,8 +94,12 @@ void configDisplay(void)
             .mirror_y = true,
         },
         .flags = {
+            .buff_dma = false,
+            .buff_spiram = false,
             .swap_bytes = false,
+            .full_refresh = false,
             .sw_rotate = false, // true: software; false: hardware
+            // .direct_mode = true,
         }};
 
     lv_disp_t *disp = lvgl_port_add_disp(&disp_cfg);

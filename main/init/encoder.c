@@ -24,7 +24,7 @@ static QueueHandle_t event_queue;
 rotary_encoder_event_t e;
 
 static rotary_encoder_t re;
-int val = -1;
+int val = 0;
 
 static const char *TAG = "encoder";
 
@@ -46,7 +46,7 @@ void configEncoder(void)
 
     ESP_LOGI(TAG, "Initial value: %d", val);
 
-    rotary_encoder_enable_acceleration(&re, 40);
+    rotary_encoder_enable_acceleration(&re, 100);
     // rotary_encoder_disable_acceleration(&re);
 
     ESP_LOGI(TAG, "finished encoder");
@@ -71,7 +71,7 @@ void getEncoderValue(int *ret_val, bool *pressed)
             // ESP_LOGI(TAG, "Button released");
             break;
         case RE_ET_BTN_CLICKED:
-            ESP_LOGI(TAG, "Button clicked");
+            // ESP_LOGI(TAG, "Button clicked");
             // *pressed = true;
             // rotary_encoder_enable_acceleration(&re, 100);
             // ESP_LOGI(TAG, "Acceleration enabled");
@@ -82,14 +82,14 @@ void getEncoderValue(int *ret_val, bool *pressed)
             // ESP_LOGI(TAG, "Acceleration disabled");
             break;
         case RE_ET_CHANGED:
-            val += e.diff;
-            ESP_LOGI(TAG, "Value = %d", val);
+            val -= e.diff;
+            // ESP_LOGI(TAG, "Value = %d", val);
             break;
         default:
             break;
         }
     }
-    *ret_val = -((int)val / 2 - (int)start_val / 2);
+    *ret_val = val - start_val ;
     *pressed = pressed_last;
 }
 

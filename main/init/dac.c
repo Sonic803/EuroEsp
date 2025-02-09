@@ -7,8 +7,8 @@
 #include "main.h"
 #include "esp_log.h"
 
-dac_oneshot_handle_t chan0_handle;
-dac_oneshot_handle_t chan1_handle;
+DRAM_ATTR dac_oneshot_handle_t chan0_handle;
+DRAM_ATTR dac_oneshot_handle_t chan1_handle;
 
 static const char *TAG = "dac";
 

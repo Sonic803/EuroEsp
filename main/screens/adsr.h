@@ -37,7 +37,7 @@ public:
     } state;
     int voltages[3] = {200, 170, 0};
     int times[3] = {100, 100, 100};
-    float current = 0;
+    float cur_val = 0;
 
     adsrScreen();
     void IRAM_ATTR update();

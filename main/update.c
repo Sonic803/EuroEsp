@@ -19,18 +19,18 @@
 #include "esp_adc/adc_oneshot.h"
 #include "esp_adc/adc_continuous.h"
 #include "esp_adc/adc_filter.h"
+#include "esp_timer.h"
 
 #include "defines.h"
 
 extern dac_oneshot_handle_t chan0_handle;
 extern dac_oneshot_handle_t chan1_handle;
 
-int vcoVal;
-int lfoVal;
-int pwm1Val;
-int pwm2Val;
-bool digi1, digi2;
-bool updated;
+DRAM_ATTR int vcoVal;
+DRAM_ATTR int lfoVal;
+DRAM_ATTR int pwm1Val;
+DRAM_ATTR int pwm2Val;
+DRAM_ATTR bool digi1, digi2;
 extern adc_oneshot_unit_handle_t adc_handle;
 extern int pots_val[2];
 extern int jack_val[3];
@@ -41,8 +41,11 @@ static const char *TAG = "update";
 static bool IRAM_ATTR on_timer_alarm_cb(gptimer_handle_t timer, const gptimer_alarm_event_data_t *edata, void *user_data)
 {
     // ESP_DRAM_LOGI(TAG, "Timer1 callback triggered");
-    ESP_ERROR_CHECK(dac_oneshot_output_voltage(chan0_handle, vcoVal));
-    ESP_ERROR_CHECK(dac_oneshot_output_voltage(chan1_handle, 255-lfoVal));
+    // static int count = 0;
+    // int64_t start_time = esp_timer_get_time(); // Get start time (µs)
+
+    dac_oneshot_output_voltage(chan0_handle, vcoVal);
+    dac_oneshot_output_voltage(chan1_handle, 255 - lfoVal);
 
     ledc_set_duty(LEDC_LOW_SPEED_MODE, PWM0_CHANNEL, pwm1Val);
     ledc_update_duty(LEDC_LOW_SPEED_MODE, PWM0_CHANNEL);
@@ -52,25 +55,50 @@ static bool IRAM_ATTR on_timer_alarm_cb(gptimer_handle_t timer, const gptimer_al
 
     gpio_set_level(DIGI1_GPIO, digi1);
     gpio_set_level(DIGI2_GPIO, digi2);
-    // digi1 = !digi1;
 
-    updated = true;
+    // int64_t end_time = esp_timer_get_time(); // Get end time (µs)
+
+    // int64_t elapsed_time1 = end_time - start_time;
+
+    // count = (count + 1) % FREQUENCY;
+
+    // if (count == 0)
+    // {
+    //     ESP_EARLY_LOGI(TAG, "Elapsed time cb1: %lld µs", elapsed_time1);
+    // }
 
     return false;
 }
 
 extern void (*updateFunction)();
 
+
 static bool IRAM_ATTR on_timer_alarm_cb2(gptimer_handle_t timer, const gptimer_alarm_event_data_t *edata, void *user_data)
 {
-    static int count = 0;
+    // static int count = 0;
+
+    // int64_t start_time = esp_timer_get_time(); // Get start time (µs)
     read_adc();
+    // int64_t end_time = esp_timer_get_time(); // Get end time (µs)
+
+    // int64_t elapsed_time1 = end_time - start_time;
+
+    // start_time = esp_timer_get_time(); // Get start time (µs)
     if (updateFunction != NULL)
     {
         updateFunction();
     }
+    // end_time = esp_timer_get_time(); // Get end time (µs)
 
-    count = (count + 1) % 3000;
+    // int64_t elapsed_time2 = end_time - start_time;
+
+    // count = (count + 1) % FREQUENCY;
+
+    // if (count == 0)
+    // {
+    //     ESP_EARLY_LOGI(TAG, "Elapsed time1: %lld µs", elapsed_time1);
+    //     ESP_EARLY_LOGI(TAG, "Elapsed time2: %lld µs", elapsed_time2);
+    // }
 
     return false;
 }

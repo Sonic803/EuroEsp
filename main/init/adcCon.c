@@ -49,6 +49,7 @@ adc_unit_t unit;
 adc_channel_t pots_chan[2];
 adc_channel_t jack_chan[3];
 adc_channel_t all_chan[num_ch];
+uint32_t max_chann = 0;
 
 int pots_val[2];
 int jack_val[3];
@@ -70,7 +71,8 @@ void read_adc()
             uint32_t chan_num = EXAMPLE_ADC_GET_CHANNEL(p);
             uint32_t data = EXAMPLE_ADC_GET_DATA(p);
             /* Check the channel number validation, the data is invalid if the channel num exceed the maximum channel */
-            if (chan_num < SOC_ADC_CHANNEL_NUM(unit))
+            // if (chan_num < SOC_ADC_CHANNEL_NUM(unit))
+            if (chan_num < max_chann)
             {
                 // ESP_LOGI(TAG, "Channel: %"PRIu32", Value: %"PRIx32, chan_num, data);
                 vals[chan_num] = data;
@@ -97,6 +99,8 @@ void configAdcContinous(void)
     adc_continuous_io_to_channel(JACK1_GPIO, &unit, &jack_chan[1]);
     adc_continuous_io_to_channel(JACK2_GPIO, &unit, &jack_chan[2]);
 
+    max_chann=SOC_ADC_CHANNEL_NUM(unit);
+
     s_task_handle = xTaskGetCurrentTaskHandle();
 
     adc_continuous_handle_cfg_t adc_config = {
@@ -107,7 +111,7 @@ void configAdcContinous(void)
     ESP_ERROR_CHECK(adc_continuous_new_handle(&adc_config, &handle));
 
     adc_continuous_config_t dig_cfg = {
-        .sample_freq_hz = 20 * 1000,
+        .sample_freq_hz = 4 * 1000,
         .conv_mode = EXAMPLE_ADC_CONV_MODE,
         .format = EXAMPLE_ADC_OUTPUT_TYPE,
     };

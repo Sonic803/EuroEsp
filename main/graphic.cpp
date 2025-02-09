@@ -47,10 +47,15 @@ extern "C" void startGraphic()
 {
     ESP_LOGI(TAG, "Starting graphic");
 
-    screens.push_back(std::make_unique<adsrScreen>());
     screens.push_back(std::make_unique<vcoScreen>());
+    screens.push_back(std::make_unique<adsrScreen>());
 
     screens[0]->select();
+
+    lvgl_port_lock(0);
+    lv_group_set_editing(screens[0]->group, false);
+    lvgl_port_unlock();
+    
 
     // a = new adsrScreen();
     updateFunction = update;

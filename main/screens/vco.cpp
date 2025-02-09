@@ -29,46 +29,36 @@ using namespace std;
 
 static const char *TAG = "vco";
 
-
-
 // TODO
 //  vedere https://docs.lvgl.io/master/details/widgets/scale.html
 
 vcoScreen::vcoScreen()
 {
 
-
-    t = new title(scrn, group, "VCO", {20, 20});
-
+    t = new title(scrn, group, {20, 20}, "VCO");
 
     state = RELEASE;
+    todo=1;
     // todo can be an issue
     arc t_arcs[] = {
-        arc(scrn, group, "A", {20, 20}, voltages[0]),
-        arc(scrn, group, "D", {50, 20}, voltages[1]),
-        arc(scrn, group, "S", {80, 20}, voltages[2]),
-        arc(scrn, group, "A", {20, 40}, times[0], 1),
-        arc(scrn, group, "D", {50, 40}, times[1], 1),
-        arc(scrn, group, "S", {80, 40}, times[2], 1)};
-
+        arc(scrn, group, {20, 20}, shape, 0, 3, 1),
+        arc(scrn, group, {20, 50}, todo, 1, 1000, 10),
+        arc(scrn, group, {50, 20}, freq)};
     // lv_scr_load(scrn);
 }
 
 void IRAM_ATTR vcoScreen::update()
 {
-    vcoVal = (int)current;
-    pwm1Val = (int)current + voltages[1] + pots_val[0];
-
-    static float phase = 0;
-    float freq = 10. + 10 * pots_val[0] / MAX_ADC_VAL;
-    phase += freq * TIMER_PERIOD_SEC;
-    if (phase > 1)
+    float frequency = (float)freq*1000/255 + (float) 1000*pots_val[1]/MAX_ADC_VAL;
+    phase += frequency * TIMER_PERIOD_SEC * todo;
+    if (phase >= todo)
     {
-        phase -= 1;
+        phase -= todo;
     }
     // int val = 128 * sin(2 * M_PI * phase) + 128;
-    int val = 128 * phase + 128;
+    int val = 250 * phase / todo;
     vcoVal = val;
     lfoVal = val;
+    pwm1Val = val;
     pwm2Val = val;
 }
