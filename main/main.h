@@ -43,6 +43,21 @@ void configLvgl(void);
 
 void updateEncoder(void);
 
+struct enableAdc
+{
+    bool pots[2];
+    bool jacks[3];
+};
+
+struct enableOut
+{
+    bool vco;
+    bool lfo;
+    bool pwm[2];
+    bool digi[2];
+};
+
+void configAdcEnabled(struct enableAdc enable);
 
 
 void IRAM_ATTR read_adc(void);

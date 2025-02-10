@@ -28,6 +28,7 @@
 #include "screens/screen.h"
 #include "screens/adsr.h"
 #include "screens/vco.h"
+#include "screens/scope.h"
 
 using namespace std;
 
@@ -47,6 +48,7 @@ extern "C" void startGraphic()
 {
     ESP_LOGI(TAG, "Starting graphic");
 
+    screens.push_back(std::make_unique<scopeScreen>());
     screens.push_back(std::make_unique<vcoScreen>());
     screens.push_back(std::make_unique<adsrScreen>());
 
@@ -63,4 +65,5 @@ extern "C" void startGraphic()
 
 extern "C" void runGraphic()
 {
+    screens[current_screen]->refresh();
 }

@@ -48,7 +48,7 @@ void encoder_init(void)
 
     // lv_group_set_focus_cb(group, focus_cb);
 
-    // lv_obj_set_scrollbar_mode(lv_scr_act(), LV_SCROLLBAR_MODE_OFF);
+    // lv_obj_set_scrollbar_mode(lv_scr_act(), LV_SCROLLBAR_MODE_ACTIVE);
 
     ESP_LOGI(TAG, "Finished encoder group");
 }

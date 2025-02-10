@@ -59,8 +59,6 @@ adsrScreen::adsrScreen()
     };
 
     
-
-    // lv_scr_load(scrn);
 }
 
 void IRAM_ATTR adsrScreen::update()

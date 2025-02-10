@@ -27,9 +27,9 @@
 #define EXAMPLE_ADC_GET_CHANNEL(p_data) ((p_data)->type1.channel)
 #define EXAMPLE_ADC_GET_DATA(p_data) ((p_data)->type1.data)
 
-#define num_ch 5
+int num_ch;
 
-#define TOTAL_BYTES (num_ch * 2 * 2)
+int total_bytes;
 
 static TaskHandle_t s_task_handle;
 static const char *TAG = "EXAMPLE";
@@ -48,19 +48,25 @@ adc_continuous_handle_t handle = NULL;
 adc_unit_t unit;
 adc_channel_t pots_chan[2];
 adc_channel_t jack_chan[3];
-adc_channel_t all_chan[num_ch];
+adc_channel_t all_chan[5];
 uint32_t max_chann = 0;
 
 int pots_val[2];
 int jack_val[3];
-int vals[20];
+int vals[32];
+
+SemaphoreHandle_t enabledMutex;
 
 void read_adc()
 {
+    if (xSemaphoreTake(enabledMutex, 0) == pdFALSE || handle == NULL)
+    {
+        return;
+    }
 
-    uint8_t result[TOTAL_BYTES] = {0};
+    uint8_t result[12] = {0};
     uint32_t ret_num = 0;
-    esp_err_t ret = adc_continuous_read(handle, result, TOTAL_BYTES, &ret_num, 0);
+    esp_err_t ret = adc_continuous_read(handle, result, total_bytes, &ret_num, 0);
 
     if (ret == ESP_OK)
     {
@@ -75,6 +81,7 @@ void read_adc()
             if (chan_num < max_chann)
             {
                 // ESP_LOGI(TAG, "Channel: %"PRIu32", Value: %"PRIx32, chan_num, data);
+                // vals[chan_num] += data;
                 vals[chan_num] = data;
             }
             else
@@ -88,38 +95,75 @@ void read_adc()
         jack_val[1] = vals[jack_chan[1] & 0x7];
         jack_val[2] = vals[jack_chan[2] & 0x7];
     }
+    xSemaphoreGive(enabledMutex);
+    return;
 }
 
-void configAdcContinous(void)
+struct enableAdc
+{
+    bool pots[2];
+    bool jacks[3];
+};
+
+void configAdcEnabled(struct enableAdc enable)
 {
 
-    adc_continuous_io_to_channel(POT0_GPIO, &unit, &pots_chan[0]);
-    adc_continuous_io_to_channel(POT1_GPIO, &unit, &pots_chan[1]);
-    adc_continuous_io_to_channel(JACK0_GPIO, &unit, &jack_chan[0]);
-    adc_continuous_io_to_channel(JACK1_GPIO, &unit, &jack_chan[1]);
-    adc_continuous_io_to_channel(JACK2_GPIO, &unit, &jack_chan[2]);
+    if (xSemaphoreTake(enabledMutex, portMAX_DELAY) == pdFALSE)
+    {
+        return;
+    }
 
-    max_chann=SOC_ADC_CHANNEL_NUM(unit);
+    if (handle != NULL) {
+        esp_err_t ret = adc_continuous_stop(handle);
+        if (ret != ESP_OK) {
+            xSemaphoreGive(enabledMutex);
+            return;
+        }
+        adc_continuous_deinit(handle);
+        handle = NULL;
+    }
 
-    s_task_handle = xTaskGetCurrentTaskHandle();
+    num_ch = enable.pots[0] + enable.pots[1] + enable.jacks[0] + enable.jacks[1] + enable.jacks[2];
+
+    int freq = 20000 * num_ch;
+
+    if (freq > 80000){
+        freq = 80000;
+    }
+
+    total_bytes = 2 * (num_ch);
+
+    total_bytes = total_bytes + total_bytes % 4; // Make it multiple of 4
 
     adc_continuous_handle_cfg_t adc_config = {
-        .max_store_buf_size = TOTAL_BYTES,
-        .conv_frame_size = TOTAL_BYTES,
+        .max_store_buf_size = total_bytes,
+        .conv_frame_size = total_bytes,
         .flags.flush_pool = 1,
     };
     ESP_ERROR_CHECK(adc_continuous_new_handle(&adc_config, &handle));
 
     adc_continuous_config_t dig_cfg = {
-        .sample_freq_hz = 4 * 1000,
+        .sample_freq_hz = freq,
         .conv_mode = EXAMPLE_ADC_CONV_MODE,
         .format = EXAMPLE_ADC_OUTPUT_TYPE,
     };
-
-    memcpy(all_chan, pots_chan, sizeof(pots_chan));
-    memcpy(all_chan + 2, jack_chan, sizeof(jack_chan));
-
-    // print EXAMPLE_ADC_BIT_WIDTH
+    int j = 0;
+    for (int i = 0; i < 2; i++)
+    {
+        if (enable.pots[i])
+        {
+            all_chan[j] = pots_chan[i];
+            j++;
+        }
+    }
+    for (int i = 0; i < 3; i++)
+    {
+        if (enable.jacks[i])
+        {
+            all_chan[j] = jack_chan[i];
+            j++;
+        }
+    }
     ESP_LOGI(TAG, "EXAMPLE_ADC_BIT_WIDTH is :%" PRIu8, EXAMPLE_ADC_BIT_WIDTH);
 
     adc_digi_pattern_config_t adc_pattern[SOC_ADC_PATT_LEN_MAX] = {0};
@@ -138,20 +182,38 @@ void configAdcContinous(void)
     dig_cfg.adc_pattern = adc_pattern;
     ESP_ERROR_CHECK(adc_continuous_config(handle, &dig_cfg));
 
-    // adc_continuous_iir_filter_config_t iir_cfg = {
-    //     .unit = unit,
-    //     .channel = POT0_GPIO,
-    //     .coeff = ADC_DIGI_IIR_FILTER_COEFF_64};
-    // adc_iir_filter_handle_t adc_filter_handle;
-    // ESP_ERROR_CHECK(adc_new_continuous_iir_filter(handle, &iir_cfg, &adc_filter_handle));
-    // ESP_ERROR_CHECK(adc_continuous_iir_filter_enable(adc_filter_handle));
-
-
     adc_continuous_evt_cbs_t cbs = {
         .on_conv_done = s_conv_done_cb,
     };
     ESP_ERROR_CHECK(adc_continuous_register_event_callbacks(handle, &cbs, NULL));
     ESP_ERROR_CHECK(adc_continuous_start(handle));
+
+    ESP_LOGI(TAG, "finished configAdcEnabled");
+    xSemaphoreGive(enabledMutex);
+    return;
+}
+
+void configAdcContinous(void)
+{
+
+    adc_continuous_io_to_channel(POT0_GPIO, &unit, &pots_chan[0]);
+    adc_continuous_io_to_channel(POT1_GPIO, &unit, &pots_chan[1]);
+    adc_continuous_io_to_channel(JACK0_GPIO, &unit, &jack_chan[0]);
+    adc_continuous_io_to_channel(JACK1_GPIO, &unit, &jack_chan[1]);
+    adc_continuous_io_to_channel(JACK2_GPIO, &unit, &jack_chan[2]);
+
+    pots_chan[0] = pots_chan[0] & 0x7;
+    pots_chan[1] = pots_chan[1] & 0x7;
+    jack_chan[0] = jack_chan[0] & 0x7;
+    jack_chan[1] = jack_chan[1] & 0x7;
+    jack_chan[2] = jack_chan[2] & 0x7;
+
+    max_chann = SOC_ADC_CHANNEL_NUM(unit);
+
+    s_task_handle = xTaskGetCurrentTaskHandle();
+    enabledMutex = xSemaphoreCreateMutex();
+
+    configAdcEnabled((struct enableAdc){.pots = {true, true}, .jacks = {true, true, true}});
 
     ESP_LOGI(TAG, "finished configAdcContinous");
 }

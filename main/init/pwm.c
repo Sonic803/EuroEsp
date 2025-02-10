@@ -38,8 +38,7 @@ void configPwm(void)
         .speed_mode = LEDC_LS_MODE,
         .hpoint = 0,
         .timer_sel = LEDC_LS_TIMER,
-        .flags.output_invert = 0,
-        .duty = 100};
+        .flags.output_invert = 0};
     ledc_channel_config(&ledc_channel0);
 
     ledc_channel_config_t ledc_channel1 = {
@@ -49,8 +48,7 @@ void configPwm(void)
         .speed_mode = LEDC_LS_MODE,
         .hpoint = 0,
         .timer_sel = LEDC_LS_TIMER,
-        .flags.output_invert = 0,
-        .duty = 100};
+        .flags.output_invert = 0};
     ledc_channel_config(&ledc_channel1);
 
     ESP_LOGI(TAG, "finished configPwm");

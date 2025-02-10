@@ -201,3 +201,6 @@ void screen::select()
 void IRAM_ATTR screen::update()
 {
 }
+void IRAM_ATTR screen::refresh()
+{
+}

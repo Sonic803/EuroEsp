@@ -25,18 +25,20 @@
 
 using namespace std;
 
-class vcoScreen : public screen
+#define WIDTH       128
+#define HEIGHT      64
+
+class scopeScreen : public screen
 {
 public:
-    int shape = 0;
-    int freq = 0;
-    float frequency;
-    int sampling = 0;
-    long phase = 0;
-    lv_obj_t *freq_label;
-    char freq_label_text[32];
-
-    vcoScreen();
+    lv_obj_t *canvas;
+    int values[WIDTH];
+    float window_us=10000;
+    float time=0;
+    float values_time=0;
+    int current = 0;
+    bool updated = true;
+    scopeScreen();
     void IRAM_ATTR update() override;
     void IRAM_ATTR refresh() override;
 };

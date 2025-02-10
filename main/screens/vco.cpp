@@ -37,28 +37,45 @@ vcoScreen::vcoScreen()
 
     t = new title(scrn, group, {20, 20}, "VCO");
 
-    state = RELEASE;
-    todo=1;
+    sampling = 100000;
     // todo can be an issue
     arc t_arcs[] = {
         arc(scrn, group, {20, 20}, shape, 0, 3, 1),
-        arc(scrn, group, {20, 50}, todo, 1, 1000, 10),
+        // arc(scrn, group, {20, 50}, sampling, 1, 1000, 10),
         arc(scrn, group, {50, 20}, freq)};
-    // lv_scr_load(scrn);
+
+    freq_label_text[0] = '\0';
+    lvgl_port_lock(0);
+
+    freq_label = lv_label_create(scrn);
+    lv_label_set_text_static(freq_label, freq_label_text);
+    lv_obj_align(freq_label, LV_ALIGN_TOP_LEFT, 40, 50);
+    lvgl_port_unlock();
+
 }
 
 void IRAM_ATTR vcoScreen::update()
 {
-    float frequency = (float)freq*1000/255 + (float) 1000*pots_val[1]/MAX_ADC_VAL;
-    phase += frequency * TIMER_PERIOD_SEC * todo;
-    if (phase >= todo)
+    frequency = (float)freq * 1000 / 255 + (float) 500*pots_val[0]/MAX_ADC_VAL+ (float) 500*pots_val[1]/MAX_ADC_VAL;
+    phase += frequency * sampling * TIMER_PERIOD_SEC;
+    if (phase >= sampling)
     {
-        phase -= todo;
+        phase -= sampling;
     }
-    // int val = 128 * sin(2 * M_PI * phase) + 128;
-    int val = 250 * phase / todo;
+    // int val = 120 * sin((float)2 * M_PI * phase / sampling) + 120;
+    int val = 250 * phase / sampling;
     vcoVal = val;
     lfoVal = val;
     pwm1Val = val;
     pwm2Val = val;
+}
+
+void IRAM_ATTR vcoScreen::refresh()
+{
+    lvgl_port_lock(0);
+
+    snprintf(freq_label_text, sizeof(freq_label_text), "%.2f", frequency);
+    lv_label_set_text(freq_label, freq_label_text);
+    lvgl_port_unlock();
+
 }

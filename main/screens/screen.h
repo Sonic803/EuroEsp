@@ -51,9 +51,27 @@ public:
     void select();
     void unselect();
     virtual void IRAM_ATTR update();
+    virtual void IRAM_ATTR refresh();
 };
 
 extern vector<std::unique_ptr<screen>> screens;
 extern int current_screen;
+
+struct enableAdc
+{
+    bool pots[2];
+    bool jacks[3];
+};
+
+struct enableOut
+{
+    bool vco;
+    bool lfo;
+    bool pwm[2];
+    bool digi[2];
+};
+
+extern "C" void configAdcEnabled(struct enableAdc enable);
+extern struct enableOut enable_out;
 
 void title_event_cb(lv_event_t *e);
