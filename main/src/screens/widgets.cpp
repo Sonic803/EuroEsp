@@ -1,7 +1,7 @@
-#include "widgets.h"
 #include "esp_log.h"
-
 #include "esp_lvgl_port.h"
+
+#include "widgets.h"
 #include "widgets/monoled/custom_monoled.h"
 
 static const char *TAG = "widgets";

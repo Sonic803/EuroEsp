@@ -1,35 +1,10 @@
-#include "utils/libs.h"
-
-#include <stdio.h>
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-#include "esp_lcd_panel_io.h"
-#include "esp_lcd_panel_ops.h"
-#include "esp_err.h"
-#include "esp_log.h"
-#include "driver/i2c_master.h"
 #include "lvgl.h"
 #include "esp_lvgl_port.h"
+#include "esp_log.h"
 
-#include "esp_adc/adc_oneshot.h"
-#include "esp_adc/adc_continuous.h"
-#include "esp_adc/adc_filter.h"
-
-#include "esp_lcd_panel_vendor.h"
-// #include "main.h"
-
-#include <string>
-#include <algorithm>
-#include <vector>
-
-#include "esp_timer.h"
-
-#include "defines.h"
-#include "math.h"
 #include "screen.h"
-
+#include "utils/libs.h"
 #include "peripherals/adc/adc.h"
-
 
 using namespace std;
 
@@ -37,8 +12,6 @@ static const char *TAG = "screen";
 
 vector<unique_ptr<screen>> screens;
 int current_screen = 0;
-
-
 
 screen::screen()
 {

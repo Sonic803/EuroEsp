@@ -1,29 +1,13 @@
-#include "utils/libs.h"
-
-#include <stdio.h>
 #include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-#include "esp_lcd_panel_io.h"
-#include "esp_lcd_panel_ops.h"
-#include "esp_err.h"
 #include "esp_log.h"
-#include "driver/i2c_master.h"
 #include "lvgl.h"
 #include "esp_lvgl_port.h"
 
-#include "esp_adc/adc_oneshot.h"
-#include "esp_adc/adc_continuous.h"
-#include "esp_adc/adc_filter.h"
-
-#include "esp_lcd_panel_vendor.h"
-// #include "main.h"
-
-#include "esp_timer.h"
-
 #include "defines.h"
-#include "math.h"
 #include "screens/screen.h"
 #include "scope.h"
+#include "utils/libs.h"
+
 
 #define COLOR_FG lv_color_black()
 #define COLOR_BG lv_color_white()
@@ -73,7 +57,7 @@ scopeScreen::scopeScreen()
     screen::enableout = enableout;
 
     values = static_cast<int *>(heap_caps_malloc(VALUES_SIZE * sizeof(int), MALLOC_CAP_INTERNAL));
-    values_copy = static_cast<int *>(heap_caps_malloc(WIDTH * sizeof(int), MALLOC_CAP_INTERNAL));
+    values_copy = static_cast<int *>(heap_caps_malloc(WIDTH_SCOPE * sizeof(int), MALLOC_CAP_INTERNAL));
 
     for (int i = 0; i < VALUES_SIZE; i++)
     {
@@ -87,10 +71,10 @@ scopeScreen::scopeScreen()
     lvgl_port_lock(0);
     canvas = lv_canvas_create(scrn);
     // TODO malloc
-    // buffer = static_cast<uint8_t *>(lv_malloc(WIDTH * HEIGHT * 2));
-    buffer = static_cast<uint8_t *>(heap_caps_malloc(WIDTH * HEIGHT * 2, MALLOC_CAP_INTERNAL));
+    // buffer = static_cast<uint8_t *>(lv_malloc(WIDTH_SCOPE * HEIGHT_SCOPE * 2));
+    buffer = static_cast<uint8_t *>(heap_caps_malloc(WIDTH_SCOPE * HEIGHT_SCOPE * 2, MALLOC_CAP_INTERNAL));
 
-    lv_canvas_set_buffer(canvas, buffer, WIDTH, HEIGHT, LV_COLOR_FORMAT_RGB565);
+    lv_canvas_set_buffer(canvas, buffer, WIDTH_SCOPE, HEIGHT_SCOPE, LV_COLOR_FORMAT_RGB565);
     lv_obj_align(canvas, LV_ALIGN_TOP_MID, 0, 15);
     lv_canvas_fill_bg(canvas, COLOR_BG, LV_OPA_COVER);
 
@@ -133,7 +117,7 @@ void IRAM_ATTR scopeScreen::update()
         while (time > values_time && current != VALUES_SIZE)
         {
             values[current] = val;
-            values_time += window_us / WIDTH;
+            values_time += window_us / WIDTH_SCOPE;
             current = current + 1;
         }
         if (current == VALUES_SIZE)
@@ -157,13 +141,13 @@ void IRAM_ATTR scopeScreen::update()
         }
 
         time += TIMER_PERIOD_MICRO;
-        while (time > values_time && current != WIDTH)
+        while (time > values_time && current != WIDTH_SCOPE)
         {
             values[current] = val;
-            values_time += window_us / WIDTH;
+            values_time += window_us / WIDTH_SCOPE;
             current = current + 1;
         }
-        if (current == WIDTH)
+        if (current == WIDTH_SCOPE)
         {
             current = 0;
             values_time = 0;
@@ -198,7 +182,7 @@ void IRAM_ATTR scopeScreen::refresh()
 
     if (rolling)
     {
-        start = (current - WIDTH + VALUES_SIZE) % VALUES_SIZE;
+        start = (current - WIDTH_SCOPE + VALUES_SIZE) % VALUES_SIZE;
         // stop = current;
     }
     else
@@ -206,10 +190,10 @@ void IRAM_ATTR scopeScreen::refresh()
         if (!full)
             return;
         start = 0;
-        // stop = WIDTH;
+        // stop = WIDTH_SCOPE;
     }
 
-    for (int i = 0; i < WIDTH; i++)
+    for (int i = 0; i < WIDTH_SCOPE; i++)
     {
         values_copy[i] = values[(start + i) % VALUES_SIZE];
     }
@@ -218,11 +202,11 @@ void IRAM_ATTR scopeScreen::refresh()
 
     lv_canvas_fill_bg(canvas, COLOR_BG, LV_OPA_COVER);
 
-    for (int i = 0; i < WIDTH; i++)
+    for (int i = 0; i < WIDTH_SCOPE; i++)
     {
-        int y = (values_copy[i] * (HEIGHT - 1)) / MAX_JACK_VAL;
-        y = (HEIGHT - 1) - y;
-        // y = min(HEIGHT - 1, max(0, y));
+        int y = (values_copy[i] * (HEIGHT_SCOPE - 1)) / MAX_JACK_VAL;
+        y = (HEIGHT_SCOPE - 1) - y;
+        // y = min(HEIGHT_SCOPE - 1, max(0, y));
         // y = max(0, y);
         lv_canvas_set_px(canvas, i, y, COLOR_FG, LV_OPA_COVER);
     }
