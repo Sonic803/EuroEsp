@@ -4,7 +4,6 @@
 #include "freertos/queue.h"
 #include "driver/gptimer.h"
 #include "driver/dac_oneshot.h"
-#include "main.h"
 #include "esp_log.h"
 
 #include <inttypes.h>
@@ -19,7 +18,7 @@
 #define RE_B_GPIO 5
 #define RE_BTN_GPIO 6
 
-#define EV_QUEUE_LEN 30
+#define EV_QUEUE_LEN 32
 
 static QueueHandle_t event_queue;
 
@@ -66,39 +65,28 @@ void getEncoderValue(int *ret_val, bool *pressed)
         {
         case RE_ET_BTN_PRESSED:
             pressed_last = true;
-            // ESP_LOGI(TAG, "Button pressed");
             break;
         case RE_ET_BTN_RELEASED:
             pressed_last = false;
-            // ESP_LOGI(TAG, "Button released");
             break;
         case RE_ET_BTN_CLICKED:
-            // ESP_LOGI(TAG, "Button clicked");
-            // *pressed = true;
-            // rotary_encoder_enable_acceleration(&re, 100);
-            // ESP_LOGI(TAG, "Acceleration enabled");
             break;
         case RE_ET_BTN_LONG_PRESSED:
-            // ESP_LOGI(TAG, "Looooong pressed button");
-            // rotary_encoder_disable_acceleration(&re);
-            // ESP_LOGI(TAG, "Acceleration disabled");
             break;
         case RE_ET_CHANGED:
             val -= e.diff;
-            // ESP_LOGI(TAG, "Value = %d", val);
             break;
         default:
             break;
         }
     }
-    *ret_val = val - start_val ;
+    *ret_val = val - start_val;
     *pressed = pressed_last;
 }
 
 int encoder_diff = 0;
 bool encoder_pressed = false;
 extern lv_indev_t *indev;
-
 
 void updateEncoder()
 {
@@ -110,5 +98,4 @@ void updateEncoder()
     lvgl_port_lock(0);
     lv_indev_read(indev);
     lvgl_port_unlock();
-
 }

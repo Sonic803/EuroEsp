@@ -3,10 +3,10 @@
 #include "esp_adc/adc_oneshot.h"
 #include "esp_lvgl_port.h"
 #include "lvgl.h"
-#include "main.h"
 #include "widgets.h"
 #include <memory>
 #include <vector>
+#include "update.h"
 
 extern "C" {
 extern int vcoVal;
@@ -14,7 +14,6 @@ extern int lfoVal;
 extern int pwm1Val;
 extern int pwm2Val;
 extern bool updated;
-extern adc_oneshot_unit_handle_t adc_handle;
 extern int pots_val[2];
 extern int jack_val[3];
 extern adc_channel_t pwm1_chan, pwm2_chan;

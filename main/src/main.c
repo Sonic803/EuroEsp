@@ -1,7 +1,5 @@
 #include "freertos/FreeRTOS.h"
 #include "esp_log.h"
-#include "main.h"
-#include "defines.h"
 
 #include "peripherals/adc/adc.h"
 #include "peripherals/dac/dac.h"

@@ -13,7 +13,6 @@
 #include "esp_adc/adc_oneshot.h"
 #include "esp_adc/adc_continuous.h"
 #include "esp_adc/adc_filter.h"
-#include "main.h"
 #include "defines.h"
 
 static const char *TAG = "espvco digital";

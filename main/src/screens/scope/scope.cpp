@@ -22,7 +22,7 @@
 
 #include "defines.h"
 #include "math.h"
-#include "screen.h"
+#include "screens/screen.h"
 #include "scope.h"
 
 #define COLOR_FG lv_color_black()

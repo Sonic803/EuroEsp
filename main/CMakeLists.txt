@@ -1,4 +1,4 @@
-file(GLOB screens_srcs "src/screens/*.c"   "src/screens/*.cpp")
+file(GLOB screens_srcs "src/screens/*/*.c"   "src/screens/*/*.cpp")
 file(GLOB widgets_srcs "src/widgets/*/*.c" "src/widgets/*/*.cpp")
 
 set(srcs
@@ -12,7 +12,8 @@ set(srcs
        "src/peripherals/lvgl/lvgl.c"
        "src/update.c"
        "src/graphic.cpp"
-       "src/screens/adsr.cpp"
+       "src/screens/screen.cpp"
+       "src/screens/widgets.cpp"
        ${screens_srcs}
        ${widgets_srcs}
        )

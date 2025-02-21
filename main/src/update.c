@@ -4,7 +4,6 @@
 #include "freertos/queue.h"
 #include "driver/gptimer.h"
 #include "driver/dac_oneshot.h"
-#include "main.h"
 #include "esp_log.h"
 
 #include <stdio.h>
@@ -22,11 +21,15 @@
 #include "esp_timer.h"
 
 #include "defines.h"
+#include "utils/values.h"
+#include "update.h"
+#include "peripherals/adc/adc.h"
 
 #define LOG_UPDATE_TIME false
 
 extern dac_oneshot_handle_t chan0_handle;
 extern dac_oneshot_handle_t chan1_handle;
+extern adc_channel_t pwm1_chan, pwm2_chan;
 
 DRAM_ATTR int vcoVal;
 DRAM_ATTR int lfoVal;
@@ -34,10 +37,8 @@ DRAM_ATTR int pwm1Val;
 DRAM_ATTR int pwm2Val;
 DRAM_ATTR bool digi1, digi2;
 DRAM_ATTR struct enableOut enable_out = {true, true, {true, true}, {true, true}};
-extern adc_oneshot_unit_handle_t adc_handle;
 extern int pots_val[2];
 extern int jack_val[3];
-extern adc_channel_t pwm1_chan, pwm2_chan;
 
 static const char *TAG = "update";
 

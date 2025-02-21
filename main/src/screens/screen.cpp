@@ -28,6 +28,9 @@
 #include "math.h"
 #include "screen.h"
 
+#include "peripherals/adc/adc.h"
+
+
 using namespace std;
 
 static const char *TAG = "screen";

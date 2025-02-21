@@ -4,7 +4,6 @@
 #include "freertos/queue.h"
 #include "driver/gptimer.h"
 #include "driver/dac_oneshot.h"
-#include "main.h"
 #include <stdio.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"

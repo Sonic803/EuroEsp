@@ -24,7 +24,7 @@
 
 #include "defines.h"
 #include "math.h"
-#include "screen.h"
+#include "screens/screen.h"
 
 using namespace std;
 

@@ -22,7 +22,7 @@
 
 #include "defines.h"
 #include "math.h"
-#include "screen.h"
+#include "screens/screen.h"
 #include "adsr.h"
 
 using namespace std;

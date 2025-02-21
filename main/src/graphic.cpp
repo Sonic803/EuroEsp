@@ -6,9 +6,9 @@
 #include "defines.h"
 
 #include "screens/screen.h"
-#include "screens/adsr.h"
-#include "screens/vco.h"
-#include "screens/scope.h"
+#include "screens/adsr/adsr.h"
+#include "screens/vco/vco.h"
+#include "screens/scope/scope.h"
 
 #include "peripherals/encoder/encoder.h"
 

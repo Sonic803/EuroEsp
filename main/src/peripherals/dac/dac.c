@@ -4,7 +4,6 @@
 #include "freertos/queue.h"
 #include "driver/gptimer.h"
 #include "driver/dac_oneshot.h"
-#include "main.h"
 #include "esp_log.h"
 
 DRAM_ATTR dac_oneshot_handle_t chan0_handle;
