@@ -42,6 +42,8 @@ void encoder_init(void)
 
     indev = lv_indev_create();
     lv_indev_set_type(indev, LV_INDEV_TYPE_ENCODER);
+    lv_indev_set_mode(indev, LV_INDEV_MODE_EVENT);
+    lv_indev_set_scroll_throw(indev, 1);
     lv_indev_set_read_cb(indev, encoder_read_cb);
 
     // (Optional) Assign a group to the input device for focus management

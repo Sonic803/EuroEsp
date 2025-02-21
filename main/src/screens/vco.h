@@ -1,3 +1,5 @@
+#pragma once
+
 #include "utils/libs.h"
 
 #include <stdio.h>
@@ -22,23 +24,31 @@
 
 #include "defines.h"
 #include "math.h"
+#include "screen.h"
 
 using namespace std;
 
-#define WIDTH       128
-#define HEIGHT      64
+#define PITCH_TABLE_SIZE 256
 
-class scopeScreen : public screen
+
+class vcoScreen : public screen
 {
 public:
-    lv_obj_t *canvas;
-    int values[WIDTH];
-    float window_us=10000;
-    float time=0;
-    float values_time=0;
-    int current = 0;
-    bool updated = true;
-    scopeScreen();
+    enableAdc enableadc = {true, true, true, false, false};
+    enableOut enableout = {true, false, {false, false}, {false, false}};
+    int shape = 0;
+    int freq = 0;
+    int time;
+    int val=0;
+    float frequency;
+    int sampling = 0;
+    long phase = 0;
+    float * pitchTable;
+    lv_obj_t *freq_label;
+    char freq_label_text[32];
+    led *led_obj;
+
+    vcoScreen();
     void IRAM_ATTR update() override;
     void IRAM_ATTR refresh() override;
 };

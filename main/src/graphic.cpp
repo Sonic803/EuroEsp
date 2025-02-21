@@ -1,34 +1,17 @@
-#include <stdio.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
-#include "esp_lcd_panel_io.h"
-#include "esp_lcd_panel_ops.h"
-#include "esp_err.h"
 #include "esp_log.h"
-#include "driver/i2c_master.h"
-#include "lvgl.h"
 #include "esp_lvgl_port.h"
 
-#include "esp_adc/adc_oneshot.h"
-#include "esp_adc/adc_continuous.h"
-#include "esp_adc/adc_filter.h"
-
-#include "esp_lcd_panel_vendor.h"
-// #include "main.h"
-
-#include <string>
-#include <algorithm>
-#include <vector>
-
-#include "esp_timer.h"
-
 #include "defines.h"
-#include "math.h"
 
 #include "screens/screen.h"
 #include "screens/adsr.h"
 #include "screens/vco.h"
 #include "screens/scope.h"
+
+#include "peripherals/encoder/encoder.h"
+
 
 using namespace std;
 
@@ -48,8 +31,8 @@ extern "C" void startGraphic()
 {
     ESP_LOGI(TAG, "Starting graphic");
 
-    screens.push_back(std::make_unique<scopeScreen>());
     screens.push_back(std::make_unique<vcoScreen>());
+    screens.push_back(std::make_unique<scopeScreen>());
     screens.push_back(std::make_unique<adsrScreen>());
 
     screens[0]->select();
@@ -57,7 +40,6 @@ extern "C" void startGraphic()
     lvgl_port_lock(0);
     lv_group_set_editing(screens[0]->group, false);
     lvgl_port_unlock();
-    
 
     // a = new adsrScreen();
     updateFunction = update;
@@ -65,5 +47,6 @@ extern "C" void startGraphic()
 
 extern "C" void runGraphic()
 {
+    updateEncoder();
     screens[current_screen]->refresh();
 }

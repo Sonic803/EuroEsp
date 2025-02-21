@@ -1,29 +1,18 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
-#include <assert.h>
 #include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-#include "freertos/queue.h"
-#include "driver/gpio.h"
-#include "driver/gptimer.h"
-#include "driver/dac_oneshot.h"
 #include "esp_log.h"
-#include "esp_adc/adc_oneshot.h"
-#include "esp_adc/adc_continuous.h"
-#include "esp_adc/adc_filter.h"
 #include "main.h"
-
-#include <assert.h>
-#include "driver/gpio.h"
-#include "esp_adc/adc_oneshot.h"
-#include "esp_adc/adc_continuous.h"
-#include "esp_adc/adc_filter.h"
-
-#include "driver/gpio.h"
 #include "defines.h"
 
-// #include "esp_system.h"
+#include "peripherals/adc/adc.h"
+#include "peripherals/dac/dac.h"
+#include "peripherals/pwm/pwm.h"
+#include "peripherals/pwm/pwm.h"
+#include "peripherals/display/display.h"
+#include "peripherals/encoder/encoder.h"
+#include "peripherals/digital/digital.h"
+#include "peripherals/lvgl/lvgl.h"
+#include "update.h"
+#include "graphic.h"
 
 static const char *TAG = "espvco";
 
@@ -50,8 +39,7 @@ void app_main(void)
 
     while (1)
     {
-        updateEncoder();
         runGraphic();
-        vTaskDelay(pdMS_TO_TICKS(50));
+        vTaskDelay(pdMS_TO_TICKS(30));
     }
 }

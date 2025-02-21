@@ -13,6 +13,8 @@
 #include "freertos/semphr.h"
 #include "esp_adc/adc_continuous.h"
 #include "esp_adc/adc_filter.h"
+#include "esp_adc/adc_cali.h"
+#include "esp_adc/adc_cali_scheme.h"
 #include "esp_timer.h"
 
 #include "defines.h"
@@ -44,6 +46,7 @@ static bool IRAM_ATTR s_conv_done_cb(adc_continuous_handle_t handle, const adc_c
 }
 
 adc_continuous_handle_t handle = NULL;
+adc_cali_handle_t handle_cali = NULL;
 
 adc_unit_t unit;
 adc_channel_t pots_chan[2];
@@ -55,47 +58,44 @@ int pots_val[2];
 int jack_val[3];
 int vals[32];
 
-SemaphoreHandle_t enabledMutex;
+DRAM_ATTR SemaphoreHandle_t enabledMutex;
 
-void read_adc()
+void IRAM_ATTR read_adc()
 {
-    if (xSemaphoreTake(enabledMutex, 0) == pdFALSE || handle == NULL)
-    {
+
+    if (handle == NULL || handle_cali == NULL)
         return;
-    }
+
+    if (xSemaphoreTakeFromISR(enabledMutex, NULL) == pdFALSE)
+        return;
 
     uint8_t result[12] = {0};
     uint32_t ret_num = 0;
     esp_err_t ret = adc_continuous_read(handle, result, total_bytes, &ret_num, 0);
+    int mv = 0;
 
     if (ret == ESP_OK)
     {
-        // ESP_LOGI("TASK", "ret is %x, ret_num is %" PRIu32 " bytes", ret, ret_num);
         for (int i = 0; i < ret_num; i += SOC_ADC_DIGI_RESULT_BYTES)
         {
             adc_digi_output_data_t *p = (adc_digi_output_data_t *)&result[i];
             uint32_t chan_num = EXAMPLE_ADC_GET_CHANNEL(p);
-            uint32_t data = EXAMPLE_ADC_GET_DATA(p);
-            /* Check the channel number validation, the data is invalid if the channel num exceed the maximum channel */
-            // if (chan_num < SOC_ADC_CHANNEL_NUM(unit))
             if (chan_num < max_chann)
             {
-                // ESP_LOGI(TAG, "Channel: %"PRIu32", Value: %"PRIx32, chan_num, data);
-                // vals[chan_num] += data;
-                vals[chan_num] = data;
-            }
-            else
-            {
-                // ESP_LOGW(TAG, "Invalid data [%" PRIu32 "_%" PRIx32 "]", chan_num, data);
+                uint32_t data = EXAMPLE_ADC_GET_DATA(p);
+                adc_cali_raw_to_voltage(handle_cali, data, &mv);
+                // vals[chan_num] = mv * 2450 / 1100;
+                vals[chan_num] = mv * 2200 / 1100;
             }
         }
         pots_val[0] = vals[pots_chan[0] & 0x7];
         pots_val[1] = vals[pots_chan[1] & 0x7];
-        jack_val[0] = vals[jack_chan[0] & 0x7];
-        jack_val[1] = vals[jack_chan[1] & 0x7];
-        jack_val[2] = vals[jack_chan[2] & 0x7];
+        jack_val[0] = vals[jack_chan[0] & 0x7] * 2.0851;
+        jack_val[1] = vals[jack_chan[1] & 0x7] * 2.0851;
+        jack_val[2] = vals[jack_chan[2] & 0x7] * 2.0851;
     }
-    xSemaphoreGive(enabledMutex);
+    // TODO possibly error
+    xSemaphoreGiveFromISR(enabledMutex,NULL);
     return;
 }
 
@@ -113,9 +113,11 @@ void configAdcEnabled(struct enableAdc enable)
         return;
     }
 
-    if (handle != NULL) {
+    if (handle != NULL)
+    {
         esp_err_t ret = adc_continuous_stop(handle);
-        if (ret != ESP_OK) {
+        if (ret != ESP_OK)
+        {
             xSemaphoreGive(enabledMutex);
             return;
         }
@@ -125,9 +127,10 @@ void configAdcEnabled(struct enableAdc enable)
 
     num_ch = enable.pots[0] + enable.pots[1] + enable.jacks[0] + enable.jacks[1] + enable.jacks[2];
 
-    int freq = 20000 * num_ch;
+        int freq = 20000 * num_ch;
 
-    if (freq > 80000){
+    if (freq > 80000)
+    {
         freq = 80000;
     }
 
@@ -182,6 +185,8 @@ void configAdcEnabled(struct enableAdc enable)
     dig_cfg.adc_pattern = adc_pattern;
     ESP_ERROR_CHECK(adc_continuous_config(handle, &dig_cfg));
 
+    ESP_LOGI(TAG, "calibration scheme version is %s", "Line Fitting");
+
     adc_continuous_evt_cbs_t cbs = {
         .on_conv_done = s_conv_done_cb,
     };
@@ -212,6 +217,13 @@ void configAdcContinous(void)
 
     s_task_handle = xTaskGetCurrentTaskHandle();
     enabledMutex = xSemaphoreCreateMutex();
+
+    adc_cali_line_fitting_config_t cali_config = {
+        .unit_id = unit,
+        .atten = EXAMPLE_ADC_ATTEN,
+        .bitwidth = SOC_ADC_DIGI_MAX_BITWIDTH,
+    };
+    ESP_ERROR_CHECK(adc_cali_create_scheme_line_fitting(&cali_config, &handle_cali));
 
     configAdcEnabled((struct enableAdc){.pots = {true, true}, .jacks = {true, true, true}});
 

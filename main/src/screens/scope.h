@@ -1,3 +1,5 @@
+#pragma once
+
 #include "utils/libs.h"
 
 #include <stdio.h>
@@ -25,18 +27,30 @@
 
 using namespace std;
 
-class vcoScreen : public screen
+#define WIDTH 128
+#define HEIGHT 64
+#define VALUES_SIZE 256 // The more time refresh takes, the bigger it needs to be
+
+class scopeScreen : public screen
 {
 public:
-    int shape = 0;
-    int freq = 0;
-    float frequency;
-    int sampling = 0;
-    long phase = 0;
-    lv_obj_t *freq_label;
-    char freq_label_text[32];
-
-    vcoScreen();
+    enableAdc enableadc = {true, false, true, false, false};
+    enableOut enableout = {true, false, {false, false}, {false, false}};
+    lv_obj_t *canvas;
+    int *values;
+    int *values_copy;
+    float window_us = 10000;
+    float time = 0;
+    float values_time = 0;
+    int current = 0;
+    int trigger = 100;
+    int last = 0;
+    int direction = 0;
+    bool rolling = true;
+    bool full = false;
+    scopeScreen();
+    void switchMode();
     void IRAM_ATTR update() override;
     void IRAM_ATTR refresh() override;
+
 };

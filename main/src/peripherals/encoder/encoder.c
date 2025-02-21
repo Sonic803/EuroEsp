@@ -12,6 +12,8 @@
 #include <string.h>
 #include <encoder.h>
 #include <esp_idf_lib_helpers.h>
+#include "lvgl.h"
+#include "esp_lvgl_port.h"
 
 #define RE_A_GPIO 4
 #define RE_B_GPIO 5
@@ -95,6 +97,8 @@ void getEncoderValue(int *ret_val, bool *pressed)
 
 int encoder_diff = 0;
 bool encoder_pressed = false;
+extern lv_indev_t *indev;
+
 
 void updateEncoder()
 {
@@ -103,4 +107,8 @@ void updateEncoder()
     getEncoderValue(&rotation, &pressed);
     encoder_diff += rotation;
     encoder_pressed = pressed;
+    lvgl_port_lock(0);
+    lv_indev_read(indev);
+    lvgl_port_unlock();
+
 }

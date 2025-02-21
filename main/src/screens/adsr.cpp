@@ -35,6 +35,9 @@ static const char *TAG = "adsr";
 adsrScreen::adsrScreen()
 {
 
+    screen::enableadc = enableadc;
+    screen::enableout = enableout;
+
     t = new title(scrn, group, {20, 20}, "ADSR");
 
     state = RELEASE;
@@ -46,8 +49,8 @@ adsrScreen::adsrScreen()
         arc(scrn, group, {35, 70}, times[0], 1),
         arc(scrn, group, {64, 70}, times[1], 1),
         arc(scrn, group, {93, 70}, times[2], 1)};
-    
-    label labels[]={
+
+    label labels[] = {
         label(scrn, group, {10, 35}, "LEV"),
         label(scrn, group, {35, 19}, "ATT"),
         label(scrn, group, {64, 19}, "SUS"),
@@ -58,7 +61,7 @@ adsrScreen::adsrScreen()
         label(scrn, group, {93, 54}, "REL"),
     };
 
-    
+    led_obj = new led(scrn, group, {10, 52}, 255, 10);
 }
 
 void IRAM_ATTR adsrScreen::update()
@@ -115,4 +118,14 @@ void IRAM_ATTR adsrScreen::update()
         break;
     }
     vcoVal = (int)cur_val;
+}
+
+void IRAM_ATTR adsrScreen::refresh()
+{
+
+    // led_obj->set_brightness(0);
+    lvgl_port_lock(0);
+    led_obj->set_brightness(cur_val);
+    lvgl_port_unlock();
+    // ESP_LOGI(TAG, "Time: %d", time);
 }

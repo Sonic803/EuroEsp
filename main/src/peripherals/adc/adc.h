@@ -1,0 +1,1 @@
+void configAdcContinous(void);
