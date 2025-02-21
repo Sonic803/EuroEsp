@@ -1,16 +1,6 @@
-#include <stdlib.h>
-#include <math.h>
-#include "freertos/FreeRTOS.h"
-#include "freertos/queue.h"
-#include "driver/gptimer.h"
-#include "driver/dac_oneshot.h"
-#include <stdio.h>
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-#include "freertos/semphr.h"
 #include "driver/ledc.h"
-#include "esp_err.h"
 #include "esp_log.h"
+
 #include "defines.h"
 
 #define LEDC_LS_MODE LEDC_LOW_SPEED_MODE

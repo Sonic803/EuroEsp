@@ -1,10 +1,6 @@
 #pragma once
 
-#include "esp_adc/adc_oneshot.h"
-#include <vector>
 #include "lvgl.h"
-#include "esp_lvgl_port.h"
-#include <memory>
 
 struct position
 {

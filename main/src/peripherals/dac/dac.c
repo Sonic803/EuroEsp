@@ -1,8 +1,3 @@
-#include <stdlib.h>
-#include <math.h>
-#include "freertos/FreeRTOS.h"
-#include "freertos/queue.h"
-#include "driver/gptimer.h"
 #include "driver/dac_oneshot.h"
 #include "esp_log.h"
 

@@ -1,17 +1,9 @@
-#include <stdlib.h>
-#include <math.h>
 #include "freertos/FreeRTOS.h"
-#include "freertos/queue.h"
-#include "driver/gptimer.h"
-#include "driver/dac_oneshot.h"
 #include "esp_log.h"
 
-#include <inttypes.h>
-#include <freertos/task.h>
 #include <string.h>
 #include <encoder.h>
 #include <esp_idf_lib_helpers.h>
-#include "lvgl.h"
 #include "esp_lvgl_port.h"
 
 #define RE_A_GPIO 4

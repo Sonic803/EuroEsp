@@ -64,15 +64,12 @@ void screen::select()
     lvgl_port_unlock();
 }
 
-void IRAM_ATTR screen::update()
+void screen::update()
 {
 }
-void IRAM_ATTR screen::refresh()
+void screen::refresh()
 {
 }
-
-
-
 
 void title_event_cb(lv_event_t *e)
 {

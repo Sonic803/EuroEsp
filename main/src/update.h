@@ -14,3 +14,6 @@ struct enableOut
     bool pwm[2];
     bool digi[2];
 };
+
+extern struct enableOut enable_out;
+

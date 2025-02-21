@@ -1,23 +1,12 @@
 #pragma once
 
-#include "esp_adc/adc_oneshot.h"
-#include "esp_lvgl_port.h"
 #include "lvgl.h"
-#include "widgets.h"
 #include <memory>
 #include <vector>
-#include "update.h"
 
-extern "C" {
-extern int vcoVal;
-extern int lfoVal;
-extern int pwm1Val;
-extern int pwm2Val;
-extern bool updated;
-extern int pots_val[2];
-extern int jack_val[3];
-extern adc_channel_t pwm1_chan, pwm2_chan;
-}
+#include "widgets.h"
+#include "update.h"
+#include "utils/values.h"
 
 class screen {
 public:
@@ -33,9 +22,7 @@ public:
   virtual void IRAM_ATTR refresh();
 };
 
+void title_event_cb(lv_event_t *e);
+
 extern std::vector<std::unique_ptr<screen>> screens;
 extern int current_screen;
-
-extern struct enableOut enable_out;
-
-void title_event_cb(lv_event_t *e);
